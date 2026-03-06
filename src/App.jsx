@@ -1,52 +1,47 @@
-import { useRef, useState } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import { useState } from 'react';
 
 function App() {
-  const componentePdfRef = useRef();
-
-  const manejarImpresion = useReactToPrint({
-    content: () => componentePdfRef.current,
-    documentTitle: 'Historia_Clinica',
-  });
-
   const [datos, setDatos] = useState({});
   const manejarCambio = (e) => setDatos({ ...datos, [e.target.name]: e.target.value });
+  const manejarImpresion = () => window.print();
 
   return (
-    <div style={{
-      padding: '30px',
-      backgroundColor: '#d0d8e0',
-      minHeight: '100vh',
-      width: '100%',
-      boxSizing: 'border-box',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-    }}>
+    <div
+      className="pagina-wrapper"
+      style={{
+        padding: '30px',
+        backgroundColor: '#d0d8e0',
+        minHeight: '100vh',
+        width: '100%',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
 
-      <button
-        onClick={manejarImpresion}
-        style={{
-          marginBottom: '24px',
-          padding: '10px 36px',
-          backgroundColor: '#0056b3',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '16px',
-          fontWeight: 'bold',
-          boxShadow: '0 2px 6px rgba(0,86,179,0.4)',
-        }}
-      >
-        Guardar como PDF / Imprimir
-      </button>
+
 
       <style>{`
+        @page {
+          size: A4 landscape;
+          margin: 10mm;
+        }
         @media print {
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          input, select { border-bottom: 1px solid #aaa !important; background: transparent !important; }
           .no-print { display: none !important; }
+          .pagina-wrapper {
+            background-color: white !important;
+            padding: 0 !important;
+          }
+          .documento {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+          }
+          input, select, textarea {
+            border-bottom: 1px solid #aaa !important;
+            background: transparent !important;
+          }
         }
         .lbl {
           display: block;
@@ -78,7 +73,7 @@ function App() {
 
       {/* Documento */}
       <div
-        ref={componentePdfRef}
+        className="documento"
         style={{
           width: '100%',
           backgroundColor: 'white',
@@ -102,8 +97,8 @@ function App() {
         {/* ── FILA 1: Fecha | Nombre y Apellido ── */}
         <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px', marginBottom: '2px' }}>
           <colgroup>
-            <col style={{ width: '200px' }} />  {/* Fecha */}
-            <col />                              {/* Nombre y Apellido (resto) */}
+            <col style={{ width: '200px' }} />
+            <col />
           </colgroup>
           <tbody>
             <tr>
@@ -122,10 +117,10 @@ function App() {
         {/* ── FILA 2: Doc. Identificación | Sexo | Fecha de Nacimiento | Edad ── */}
         <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px', marginBottom: '2px' }}>
           <colgroup>
-            <col style={{ width: '220px' }} />  {/* Doc. Identificación */}
-            <col style={{ width: '120px' }} />  {/* Sexo */}
-            <col />                             {/* Fecha de Nacimiento (resto) */}
-            <col style={{ width: '80px' }} />   {/* Edad */}
+            <col style={{ width: '28%' }} />
+            <col style={{ width: '15%' }} />
+            <col style={{ width: '45%' }} />
+            <col style={{ width: '12%' }} />
           </colgroup>
           <tbody>
             <tr>
@@ -157,9 +152,9 @@ function App() {
         {/* ── FILA 3: Teléfono | Dirección | Email ── */}
         <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px', marginBottom: '2px' }}>
           <colgroup>
-            <col style={{ width: '220px' }} />  {/* Teléfono */}
-            <col />                             {/* Dirección (resto) */}
-            <col style={{ width: '300px' }} />  {/* Email */}
+            <col style={{ width: '220px' }} />
+            <col />
+            <col style={{ width: '300px' }} />
           </colgroup>
           <tbody>
             <tr>
@@ -182,8 +177,8 @@ function App() {
         {/* ── FILA 4: Obra Social | N° de Afiliado ── */}
         <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px', marginBottom: '2px' }}>
           <colgroup>
-            <col />                             {/* Obra Social (resto) */}
-            <col style={{ width: '300px' }} />  {/* N° de Afiliado */}
+            <col />
+            <col style={{ width: '300px' }} />
           </colgroup>
           <tbody>
             <tr>
@@ -409,6 +404,27 @@ function App() {
         </div>
 
       </div>
+
+      {/* Botón al final — no se imprime */}
+      <button
+        className="no-print"
+        onClick={manejarImpresion}
+        style={{
+          marginTop: '24px',
+          padding: '12px 48px',
+          backgroundColor: '#0056b3',
+          color: 'white',
+          border: 'none',
+          borderRadius: '6px',
+          cursor: 'pointer',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          boxShadow: '0 2px 8px rgba(0,86,179,0.4)',
+        }}
+      >
+        🖨️ Guardar como PDF / Imprimir
+      </button>
+
     </div>
 
 
