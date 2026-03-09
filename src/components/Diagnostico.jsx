@@ -1,37 +1,28 @@
+import { SECTION_TITLE } from './theme';
+
 function Diagnostico({ onChange }) {
     return (
-        <div style={{ marginTop: '18px' }}>
+        <div style={{ marginTop: '20px' }}>
 
             {/* Título */}
-            <div style={{
-                backgroundColor: '#003d6b',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '12px',
-                letterSpacing: '1px',
-                padding: '5px 10px',
-                textTransform: 'uppercase',
-                textAlign: 'center',
-            }}>
-                Diagnóstico
-            </div>
+            <div style={{ ...SECTION_TITLE, textAlign: 'center' }}>Diagnóstico</div>
 
-            {/* Área de escritura libre */}
+            {/* Textarea */}
             <textarea
                 name="diagnostico"
                 onChange={onChange}
                 placeholder="Escribir diagnóstico aquí..."
                 style={{
                     width: '100%',
-                    minHeight: '100px',
-                    border: '1px solid #b3d9ff',
+                    minHeight: '110px',
+                    border: '1px solid rgba(255,255,255,0.08)',
                     borderTop: 'none',
-                    backgroundColor: '#fff',
+                    backgroundColor: 'rgba(255,255,255,0.04)',
                     resize: 'vertical',
-                    padding: '10px 14px',
-                    fontFamily: 'Arial, sans-serif',
-                    fontSize: '12px',
-                    color: '#000',
+                    padding: '12px 16px',
+                    fontFamily: "'Inter', Arial, sans-serif",
+                    fontSize: '13px',
+                    color: 'rgba(255,255,255,0.85)',
                     outline: 'none',
                     boxSizing: 'border-box',
                 }}

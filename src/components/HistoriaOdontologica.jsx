@@ -1,3 +1,5 @@
+import { SECTION_TITLE, SECTION_BODY } from './theme';
+
 function HistoriaOdontologica({ onChange }) {
     const preguntas = [
         { name: 'cepilla', label: '¿Se cepilla los dientes diariamente?' },
@@ -8,39 +10,21 @@ function HistoriaOdontologica({ onChange }) {
     ];
 
     return (
-        <div style={{ marginTop: '18px' }}>
+        <div style={{ marginTop: '20px' }}>
 
             {/* Título */}
-            <div style={{
-                backgroundColor: '#003d6b',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '12px',
-                letterSpacing: '1px',
-                padding: '5px 10px',
-                textTransform: 'uppercase',
-            }}>
-                Historia Odontológica
-            </div>
+            <div style={SECTION_TITLE}>Historia Odontológica</div>
 
             {/* Preguntas */}
-            <div style={{
-                border: '1px solid #b3d9ff',
-                backgroundColor: '#f0f7ff',
-                padding: '10px 14px',
-                fontSize: '12px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-            }}>
+            <div style={{ ...SECTION_BODY, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {preguntas.map(({ name, label }) => (
                     <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ minWidth: '280px' }}>{label}</span>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                            <input type="radio" name={name} value="Si" onChange={onChange} /> Sí
+                        <span style={{ minWidth: '280px', color: 'rgba(255,255,255,0.82)' }}>{label}</span>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', color: 'rgba(255,255,255,0.82)' }}>
+                            <input type="radio" name={name} value="Si" onChange={onChange} style={{ accentColor: '#00aae4' }} /> Sí
                         </label>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                            <input type="radio" name={name} value="No" onChange={onChange} /> No
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', color: 'rgba(255,255,255,0.82)' }}>
+                            <input type="radio" name={name} value="No" onChange={onChange} style={{ accentColor: '#00aae4' }} /> No
                         </label>
                     </div>
                 ))}
