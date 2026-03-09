@@ -1,6 +1,6 @@
 import { SECTION_TITLE } from './theme';
 
-function Diagnostico({ onChange }) {
+function Diagnostico({ onChange, valores = {} }) {
     return (
         <div style={{ marginTop: '20px' }}>
 
@@ -11,6 +11,7 @@ function Diagnostico({ onChange }) {
             <textarea
                 name="diagnostico"
                 onChange={onChange}
+                defaultValue={valores.diagnostico || ''}
                 placeholder="Escribir diagnóstico aquí..."
                 style={{
                     width: '100%',
