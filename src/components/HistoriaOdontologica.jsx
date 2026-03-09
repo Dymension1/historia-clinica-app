@@ -1,6 +1,6 @@
 import { SECTION_TITLE, SECTION_BODY } from './theme';
 
-function HistoriaOdontologica({ onChange }) {
+function HistoriaOdontologica({ onChange, valores = {} }) {
     const preguntas = [
         { name: 'cepilla', label: '¿Se cepilla los dientes diariamente?' },
         { name: 'hiloDental2', label: '¿Usa hilo dental?' },
@@ -21,10 +21,10 @@ function HistoriaOdontologica({ onChange }) {
                     <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <span style={{ minWidth: '280px', color: 'rgba(255,255,255,0.82)' }}>{label}</span>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', color: 'rgba(255,255,255,0.82)' }}>
-                            <input type="radio" name={name} value="Si" onChange={onChange} style={{ accentColor: '#00aae4' }} /> Sí
+                            <input type="radio" name={name} value="Si" onChange={onChange} defaultChecked={valores[name] === 'Si'} style={{ accentColor: '#00aae4' }} /> Sí
                         </label>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', color: 'rgba(255,255,255,0.82)' }}>
-                            <input type="radio" name={name} value="No" onChange={onChange} style={{ accentColor: '#00aae4' }} /> No
+                            <input type="radio" name={name} value="No" onChange={onChange} defaultChecked={valores[name] === 'No'} style={{ accentColor: '#00aae4' }} /> No
                         </label>
                     </div>
                 ))}
