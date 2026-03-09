@@ -211,6 +211,7 @@ function App() {
   // ── Vista: Formulario (nueva o edición) ──
   return (
     <div
+      className="form-page-wrapper"
       style={{
         minHeight: '100vh',
         background: 'linear-gradient(160deg, #0d1b2e 0%, #0a2744 60%, #0d3866 100%)',
@@ -224,17 +225,100 @@ function App() {
 
         @page { size: A4 landscape; margin: 10mm; }
         @media print {
-          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          /* ── Fondo de página completamente blanco ── */
+          body, html {
+            background: white !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          /* ── Ocultar UI no imprimible ── */
           .no-print { display: none !important; }
           .form-topbar { display: none !important; }
+          .form-actions { display: none !important; }
+          .toast { display: none !important; }
+
+          /* ── Wrapper externo: quitar fondo oscuro ── */
+          .form-page-wrapper {
+            background: white !important;
+            min-height: unset !important;
+          }
+          /* ── Contenedor del cuerpo ── */
           .form-body {
             background: white !important;
-            padding: 20px !important;
+            padding: 8px 12px !important;
+            max-width: none !important;
+            margin: 0 !important;
           }
-          .celda { background-color: #e8f4fc !important; border-color: white !important; }
+          /* ── Card sin sombra ni borde oscuro ── */
+          .form-card {
+            background: white !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+          }
+          /* ── Encabezado ── */
+          .form-header {
+            background: #e0f4fb !important;
+            border-bottom: 2px solid #00aae4 !important;
+            padding: 10px 24px !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .form-title {
+            color: #000 !important;
+            text-decoration-color: #00aae4 !important;
+          }
+          .form-inner {
+            padding: 8px 16px 12px !important;
+            background: white !important;
+          }
+
+          /* ── Forzar todo el texto a negro (overrides inline styles) ── */
+          .form-inner * { color: #000 !important; }
+
+          /* ── Celdas de datos personales ── */
+          .celda {
+            background-color: #e8f4fc !important;
+            border-right-color: white !important;
+            border-bottom-color: white !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
           .lbl { color: #003d6b !important; }
-          .inp { color: #000 !important; border-bottom-color: #7ab3d9 !important; }
-          input, select, textarea { color: #000 !important; background: transparent !important; }
+          .inp {
+            color: #000 !important;
+            border-bottom: 1px solid #7ab3d9 !important;
+            background: transparent !important;
+          }
+
+          /* ── Títulos de secciones (SECTION_TITLE) ── */
+          .form-inner > div > div:first-child {
+            background: rgba(0,170,228,0.15) !important;
+            border-left: 3px solid #00aae4 !important;
+            color: #003d6b !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          /* ── Fondos de cuerpo de secciones ── */
+          .form-inner > div > div:not(:first-child) {
+            background: #f5faff !important;
+            border: 1px solid #c7dff0 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          /* ── Inputs, selects, textareas ── */
+          input, select, textarea {
+            color: #000 !important;
+            background: transparent !important;
+          }
+
+          /* ── Ocultar placeholders en impresión (todos los navegadores) ── */
+          ::-webkit-input-placeholder { color: transparent !important; -webkit-text-fill-color: transparent !important; opacity: 0 !important; }
+          ::-moz-placeholder           { color: transparent !important; opacity: 0 !important; }
+          :-ms-input-placeholder       { color: transparent !important; opacity: 0 !important; }
+          ::placeholder                { color: transparent !important; opacity: 0 !important; }
         }
 
         /* ── Topbar del formulario ── */
@@ -467,8 +551,8 @@ function App() {
             </h2>
           </div>
 
-          {/* Secciones */}
-          <div className="form-inner">
+          {/* Secciones — key fuerza re-montaje al cambiar de registro */}
+          <div className="form-inner" key={editandoId || 'nuevo'}>
             <DatosPersonales onChange={manejarCambio} valores={datos} />
             <AntecedentesMedicos onChange={manejarCambio} valores={datos} />
             <HistoriaOdontologica onChange={manejarCambio} valores={datos} />
