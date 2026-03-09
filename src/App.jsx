@@ -1,433 +1,496 @@
 import { useState } from 'react';
+import { supabase } from './supabaseClient';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import DatosPersonales from './components/DatosPersonales';
+import AntecedentesMedicos from './components/AntecedentesMedicos';
+import HistoriaOdontologica from './components/HistoriaOdontologica';
+import Diagnostico from './components/Diagnostico';
+
+// ── Convierte una fila de Supabase → estado del formulario ──
+function rowToForm(r) {
+  return {
+    fecha: r.fecha || '',
+    nombre: r.nombre || '',
+    dni: r.dni || '',
+    sexo: r.sexo || '',
+    fechaNacimiento: r.fecha_nacimiento || '',
+    edad: r.edad ?? '',
+    telefono: r.telefono || '',
+    direccion: r.direccion || '',
+    email: r.email_paciente || '',
+    obraSocial: r.obra_social || '',
+    afiliado: r.afiliado || '',
+    motivoConsulta: r.motivo_consulta || '',
+    'cond_Cardiopatías': r.cond_cardiopatias || false,
+    'cond_Hipertensión / Hipotensión': r.cond_hipertension || false,
+    'cond_Diabetes': r.cond_diabetes || false,
+    'cond_Asma': r.cond_asma || false,
+    'cond_Anemia': r.cond_anemia || false,
+    'cond_Trastornos tiroideos': r.cond_tiroides || false,
+    'cond_Epilepsia': r.cond_epilepsia || false,
+    'cond_Trastornos de coagulación': r.cond_coagulacion || false,
+    'cond_Embarazo': r.cond_embarazo || false,
+    cond_autoinmunes: r.cond_autoinmunes || false,
+    autoinmunes_detalle: r.cond_autoinmunes_detalle || '',
+    cond_otras: r.cond_otras || false,
+    otras_detalle: r.cond_otras_detalle || '',
+    fuma: r.fuma || false,
+    fuma_detalle: r.fuma_detalle || '',
+    alcohol_rta: r.alcohol_rta || '',
+    hilo_frec: r.hilo_frec || '',
+    enjuague_rta: r.enjuague_rta || '',
+    encias_rta: r.encias_rta || '',
+    sensibilidad_rta: r.sensibilidad_rta || '',
+    bruxismo_rta: r.bruxismo_rta || '',
+    reacciones: r.reacciones || false,
+    reacciones_detalle: r.reacciones_detalle || '',
+    cepilla: r.cepilla || '',
+    hiloDental2: r.hilo_dental2 || '',
+    enjuague2: r.enjuague2 || '',
+    encias2: r.encias2 || '',
+    tejidos: r.tejidos || '',
+    diagnostico: r.diagnostico || '',
+  };
+}
+
+// ── Convierte estado del formulario → fila de Supabase ──
+function formToRow(datos, userId) {
+  return {
+    user_id: userId,
+    fecha: datos.fecha || null,
+    nombre: datos.nombre || null,
+    dni: datos.dni || null,
+    sexo: datos.sexo || null,
+    fecha_nacimiento: datos.fechaNacimiento || null,
+    edad: datos.edad ? parseInt(datos.edad) : null,
+    telefono: datos.telefono || null,
+    direccion: datos.direccion || null,
+    email_paciente: datos.email || null,
+    obra_social: datos.obraSocial || null,
+    afiliado: datos.afiliado || null,
+    motivo_consulta: datos.motivoConsulta || null,
+    cond_cardiopatias: !!datos['cond_Cardiopatías'],
+    cond_hipertension: !!datos['cond_Hipertensión / Hipotensión'],
+    cond_diabetes: !!datos['cond_Diabetes'],
+    cond_asma: !!datos['cond_Asma'],
+    cond_anemia: !!datos['cond_Anemia'],
+    cond_tiroides: !!datos['cond_Trastornos tiroideos'],
+    cond_epilepsia: !!datos['cond_Epilepsia'],
+    cond_coagulacion: !!datos['cond_Trastornos de coagulación'],
+    cond_embarazo: !!datos['cond_Embarazo'],
+    cond_autoinmunes: !!datos.cond_autoinmunes,
+    cond_autoinmunes_detalle: datos.autoinmunes_detalle || null,
+    cond_otras: !!datos.cond_otras,
+    cond_otras_detalle: datos.otras_detalle || null,
+    fuma: !!datos.fuma,
+    fuma_detalle: datos.fuma_detalle || null,
+    alcohol_rta: datos.alcohol_rta || null,
+    hilo_frec: datos.hilo_frec || null,
+    enjuague_rta: datos.enjuague_rta || null,
+    encias_rta: datos.encias_rta || null,
+    sensibilidad_rta: datos.sensibilidad_rta || null,
+    bruxismo_rta: datos.bruxismo_rta || null,
+    reacciones: !!datos.reacciones,
+    reacciones_detalle: datos.reacciones_detalle || null,
+    cepilla: datos.cepilla || null,
+    hilo_dental2: datos.hiloDental2 || null,
+    enjuague2: datos.enjuague2 || null,
+    encias2: datos.encias2 || null,
+    tejidos: datos.tejidos || null,
+    diagnostico: datos.diagnostico || null,
+  };
+}
 
 function App() {
+  const [usuarioActivo, setUsuarioActivo] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+  // vista: 'dashboard' | 'nueva' | 'editar'
+  const [vista, setVista] = useState('dashboard');
+  const [editandoId, setEditandoId] = useState(null);
   const [datos, setDatos] = useState({});
-  const manejarCambio = (e) => setDatos({ ...datos, [e.target.name]: e.target.value });
+  const [guardando, setGuardando] = useState(false);
+  const [estadoGuardado, setEstadoGuardado] = useState(null); // 'ok' | 'error' | null
+
+  const manejarCambio = (e) => {
+    const { name, type, checked, value } = e.target;
+    setDatos((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
   const manejarImpresion = () => window.print();
 
+  const cerrarSesion = async () => {
+    await supabase.auth.signOut();
+    setUsuarioActivo(null);
+    setSessionId(null);
+    setDatos({});
+    setVista('dashboard');
+  };
+
+  // ── Abrir formulario para nueva historia ──
+  const abrirNueva = () => {
+    setDatos({});
+    setEditandoId(null);
+    setEstadoGuardado(null);
+    setVista('nueva');
+  };
+
+  // ── Abrir formulario en modo edición ──
+  const abrirEditar = async (id) => {
+    const { data, error } = await supabase
+      .from('historias_clinicas')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (!error && data) {
+      setDatos(rowToForm(data));
+      setEditandoId(id);
+      setEstadoGuardado(null);
+      setVista('editar');
+    }
+  };
+
+  // ── Guardar (INSERT o UPDATE según el modo) ──
+  const guardarHistoria = async () => {
+    setGuardando(true);
+    setEstadoGuardado(null);
+
+    const registro = formToRow(datos, sessionId);
+
+    let error;
+    if (editandoId) {
+      // Modo edición → UPDATE
+      ({ error } = await supabase
+        .from('historias_clinicas')
+        .update(registro)
+        .eq('id', editandoId));
+    } else {
+      // Modo nuevo → INSERT
+      ({ error } = await supabase
+        .from('historias_clinicas')
+        .insert(registro));
+    }
+
+    setGuardando(false);
+    if (!error) {
+      setEstadoGuardado('ok');
+      setTimeout(() => {
+        setEstadoGuardado(null);
+        setVista('dashboard'); // volver al dashboard tras guardar
+      }, 1800);
+    } else {
+      setEstadoGuardado('error');
+    }
+  };
+
+  // ── Sin sesión → Login ──
+  if (!usuarioActivo) {
+    return (
+      <Login
+        onLogin={(email, userId) => {
+          setUsuarioActivo(email);
+          setSessionId(userId);
+        }}
+      />
+    );
+  }
+
+  // ── Vista: Dashboard ──
+  if (vista === 'dashboard') {
+    return (
+      <Dashboard
+        usuario={usuarioActivo}
+        onNueva={abrirNueva}
+        onEditar={abrirEditar}
+        onCerrarSesion={cerrarSesion}
+      />
+    );
+  }
+
+  // ── Vista: Formulario (nueva o edición) ──
   return (
     <div
-      className="pagina-wrapper"
       style={{
-        padding: '30px',
-        backgroundColor: '#d0d8e0',
         minHeight: '100vh',
-        width: '100%',
-        boxSizing: 'border-box',
+        background: 'linear-gradient(160deg, #0d1b2e 0%, #0a2744 60%, #0d3866 100%)',
+        fontFamily: "'Inter', Arial, sans-serif",
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
       }}
     >
-
-
-
       <style>{`
-        @page {
-          size: A4 landscape;
-          margin: 10mm;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        @page { size: A4 landscape; margin: 10mm; }
         @media print {
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           .no-print { display: none !important; }
-          .pagina-wrapper {
-            background-color: white !important;
-            padding: 0 !important;
+          .form-topbar { display: none !important; }
+          .form-body {
+            background: white !important;
+            padding: 20px !important;
           }
-          .documento {
-            box-shadow: none !important;
-            border-radius: 0 !important;
-          }
-          input, select, textarea {
-            border-bottom: 1px solid #aaa !important;
-            background: transparent !important;
-          }
+          .celda { background-color: #e8f4fc !important; border-color: white !important; }
+          .lbl { color: #003d6b !important; }
+          .inp { color: #000 !important; border-bottom-color: #7ab3d9 !important; }
+          input, select, textarea { color: #000 !important; background: transparent !important; }
         }
+
+        /* ── Topbar del formulario ── */
+        .form-topbar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 14px 32px;
+          background: rgba(255,255,255,0.04);
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          backdrop-filter: blur(10px);
+        }
+        .form-topbar-brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: white;
+          font-size: 17px;
+          font-weight: 700;
+        }
+        .form-topbar-brand span { color: #00aae4; }
+        .form-topbar-right {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .form-user-badge {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 20px;
+          padding: 6px 14px;
+          color: rgba(255,255,255,0.85);
+          font-size: 13px;
+        }
+        .btn-back {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 7px 16px;
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.13);
+          border-radius: 8px;
+          color: rgba(255,255,255,0.75);
+          font-size: 13px;
+          font-weight: 500;
+          font-family: 'Inter', Arial, sans-serif;
+          cursor: pointer;
+          transition: background 0.2s, color 0.2s;
+        }
+        .btn-back:hover { background: rgba(255,255,255,0.13); color: white; }
+        .btn-logout-form {
+          padding: 7px 16px;
+          background: transparent;
+          border: 1px solid rgba(204,34,0,0.5);
+          border-radius: 8px;
+          color: #ff6b55;
+          font-size: 13px;
+          font-weight: 600;
+          font-family: 'Inter', Arial, sans-serif;
+          cursor: pointer;
+          transition: background 0.2s, color 0.2s;
+        }
+        .btn-logout-form:hover { background: #cc2200; color: white; border-color: #cc2200; }
+
+        /* ── Cuerpo del formulario ── */
+        .form-body {
+          flex: 1;
+          padding: 28px 32px;
+          max-width: 1200px;
+          width: 100%;
+          margin: 0 auto;
+          box-sizing: border-box;
+        }
+
+        /* ── Card contenedora ── */
+        .form-card {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.09);
+          border-radius: 14px;
+          overflow: hidden;
+        }
+
+        /* ── Encabezado dentro del card ── */
+        .form-header {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px 32px;
+          border-bottom: 2px solid rgba(0,170,228,0.3);
+          background: rgba(0,170,228,0.06);
+        }
+        .form-title {
+          color: white;
+          font-size: 17px;
+          font-weight: 700;
+          letter-spacing: 2.5px;
+          text-transform: uppercase;
+          text-decoration: underline;
+          text-underline-offset: 4px;
+          text-decoration-color: rgba(0,170,228,0.5);
+          margin: 0;
+        }
+        .form-inner {
+          padding: 24px 32px 28px;
+        }
+
+        /* ── Clases reutilizadas en DatosPersonales ── */
         .lbl {
           display: block;
           font-size: 10px;
-          font-weight: bold;
-          color: #003d6b;
+          font-weight: 700;
+          color: rgba(255,255,255,0.45);
           text-transform: uppercase;
-          letter-spacing: 0.4px;
-          margin-bottom: 3px;
+          letter-spacing: 0.7px;
+          margin-bottom: 4px;
+          font-family: 'Inter', Arial, sans-serif;
         }
         .inp {
           border: none;
-          border-bottom: 1px solid #7ab3d9;
+          border-bottom: 1px solid rgba(0,170,228,0.35);
           background: transparent;
           outline: none;
-          font-family: Arial, sans-serif;
-          color: #000;
-          padding: 2px 0;
-          font-size: 12px;
+          font-family: 'Inter', Arial, sans-serif;
+          color: rgba(255,255,255,0.9);
+          padding: 4px 0;
+          font-size: 13px;
+          transition: border-color 0.2s;
         }
+        .inp:focus { border-bottom-color: #00aae4; }
+        .inp::placeholder { color: rgba(255,255,255,0.2); }
+        .inp option { background: #0d2444; color: white; }
+
         .celda {
-          background-color: #e8f4fc;
-          border-bottom: 2px solid #fff;
-          border-right: 2px solid #fff;
+          background-color: rgba(255,255,255,0.04);
+          border-bottom: 2px solid rgba(255,255,255,0.06);
+          border-right: 2px solid rgba(255,255,255,0.06);
           vertical-align: top;
-          padding: 8px 12px;
+          padding: 10px 14px;
         }
+
+        /* ── Botones de acción ── */
+        .form-actions {
+          display: flex;
+          gap: 14px;
+          justify-content: center;
+          padding: 24px 32px;
+          flex-wrap: wrap;
+        }
+        .btn-save {
+          padding: 12px 44px;
+          background: linear-gradient(135deg, #00a651, #007a3d);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 15px;
+          font-weight: 700;
+          font-family: 'Inter', Arial, sans-serif;
+          box-shadow: 0 2px 12px rgba(0,166,81,0.4);
+          transition: opacity 0.2s, transform 0.1s;
+        }
+        .btn-save:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+        .btn-save:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        .btn-print {
+          padding: 12px 44px;
+          background: linear-gradient(135deg, #00aae4, #0056b3);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 15px;
+          font-weight: 700;
+          font-family: 'Inter', Arial, sans-serif;
+          box-shadow: 0 2px 12px rgba(0,170,228,0.35);
+          transition: opacity 0.2s, transform 0.1s;
+        }
+        .btn-print:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .btn-cancel-form {
+          padding: 12px 28px;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 8px;
+          color: rgba(255,255,255,0.65);
+          cursor: pointer;
+          font-size: 15px;
+          font-weight: 600;
+          font-family: 'Inter', Arial, sans-serif;
+          transition: background 0.2s, color 0.2s;
+        }
+        .btn-cancel-form:hover { background: rgba(255,255,255,0.12); color: white; }
+
+        /* ── Toast ── */
+        .toast {
+          margin: 0 32px 24px;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          font-family: 'Inter', Arial, sans-serif;
+          animation: fadeIn 0.3s ease;
+        }
+        .toast-ok    { background: rgba(0,166,81,0.15); color: #4ade80; border: 1px solid rgba(0,166,81,0.3); }
+        .toast-error { background: rgba(204,34,0,0.15); color: #ff8a95; border: 1px solid rgba(204,34,0,0.3); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
-      {/* Documento */}
-      <div
-        className="documento"
-        style={{
-          width: '100%',
-          backgroundColor: 'white',
-          padding: '30px 40px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-          fontFamily: 'Arial, sans-serif',
-          boxSizing: 'border-box',
-          borderRadius: '4px',
-        }}
-      >
-
-        {/* Encabezado */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', borderBottom: '3px solid #00aae4', paddingBottom: '16px' }}>
-          <div style={{ flex: 1, textAlign: 'center' }}>
-            <h2 style={{ textDecoration: 'underline', margin: 0, color: '#000', fontSize: '18px', letterSpacing: '2px' }}>
-              HISTORIA CLÍNICA
-            </h2>
-          </div>
+      {/* ── Topbar ── */}
+      <div className="form-topbar no-print">
+        <div className="form-topbar-brand">🦷 Historia<span>Clínica</span></div>
+        <div className="form-topbar-right">
+          <button className="btn-back" onClick={() => setVista('dashboard')}>← Panel</button>
+          <div className="form-user-badge">👤 {usuarioActivo}</div>
+          <button className="btn-logout-form" onClick={cerrarSesion}>Cerrar sesión</button>
         </div>
-
-        {/* ── FILA 1: Fecha | Nombre y Apellido ── */}
-        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px', marginBottom: '2px' }}>
-          <colgroup>
-            <col style={{ width: '200px' }} />
-            <col />
-          </colgroup>
-          <tbody>
-            <tr>
-              <td className="celda">
-                <span className="lbl">Fecha</span>
-                <input type="date" className="inp" name="fecha" onChange={manejarCambio} style={{ width: '100%' }} />
-              </td>
-              <td className="celda">
-                <span className="lbl">Nombre y Apellido</span>
-                <input type="text" className="inp" name="nombre" onChange={manejarCambio} placeholder="Apellido, Nombre" style={{ width: '100%' }} />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        {/* ── FILA 2: Doc. Identificación | Sexo | Fecha de Nacimiento | Edad ── */}
-        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px', marginBottom: '2px' }}>
-          <colgroup>
-            <col style={{ width: '28%' }} />
-            <col style={{ width: '15%' }} />
-            <col style={{ width: '45%' }} />
-            <col style={{ width: '12%' }} />
-          </colgroup>
-          <tbody>
-            <tr>
-              <td className="celda">
-                <span className="lbl">Doc. de Identificación</span>
-                <input type="text" className="inp" name="dni" onChange={manejarCambio} placeholder="Nro. documento" style={{ width: '100%' }} />
-              </td>
-              <td className="celda">
-                <span className="lbl">Sexo</span>
-                <select name="sexo" className="inp" onChange={manejarCambio} style={{ width: '100%', cursor: 'pointer' }}>
-                  <option value="">--</option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Femenino">Femenino</option>
-                  <option value="Otro">Otro</option>
-                </select>
-              </td>
-              <td className="celda">
-                <span className="lbl">Fecha de Nacimiento</span>
-                <input type="date" className="inp" name="fechaNacimiento" onChange={manejarCambio} style={{ width: '100%' }} />
-              </td>
-              <td className="celda">
-                <span className="lbl">Edad</span>
-                <input type="number" className="inp" name="edad" onChange={manejarCambio} min="0" max="120" placeholder="--" style={{ width: '100%', textAlign: 'center' }} />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        {/* ── FILA 3: Teléfono | Dirección | Email ── */}
-        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px', marginBottom: '2px' }}>
-          <colgroup>
-            <col style={{ width: '220px' }} />
-            <col />
-            <col style={{ width: '300px' }} />
-          </colgroup>
-          <tbody>
-            <tr>
-              <td className="celda">
-                <span className="lbl">Teléfono</span>
-                <input type="tel" className="inp" name="telefono" onChange={manejarCambio} placeholder="011 1234-5678" style={{ width: '100%' }} />
-              </td>
-              <td className="celda">
-                <span className="lbl">Dirección</span>
-                <input type="text" className="inp" name="direccion" onChange={manejarCambio} placeholder="Calle, número, ciudad" style={{ width: '100%' }} />
-              </td>
-              <td className="celda">
-                <span className="lbl">Email</span>
-                <input type="email" className="inp" name="email" onChange={manejarCambio} placeholder="correo@ejemplo.com" style={{ width: '100%' }} />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        {/* ── FILA 4: Obra Social | N° de Afiliado ── */}
-        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px', marginBottom: '2px' }}>
-          <colgroup>
-            <col />
-            <col style={{ width: '300px' }} />
-          </colgroup>
-          <tbody>
-            <tr>
-              <td className="celda">
-                <span className="lbl">Obra Social</span>
-                <input type="text" className="inp" name="obraSocial" onChange={manejarCambio} placeholder="Nombre de la obra social" style={{ width: '100%' }} />
-              </td>
-              <td className="celda">
-                <span className="lbl">N° de Afiliado</span>
-                <input type="text" className="inp" name="afiliado" onChange={manejarCambio} placeholder="Nro. afiliado" style={{ width: '100%' }} />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        {/* ── FILA 5: Motivo de Consulta ── */}
-        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px' }}>
-          <colgroup>
-            <col />  {/* Motivo (ancho completo) */}
-          </colgroup>
-          <tbody>
-            <tr>
-              <td className="celda" style={{ borderBottom: 'none' }}>
-                <span className="lbl">Motivo de Consulta</span>
-                <input type="text" className="inp" name="motivoConsulta" onChange={manejarCambio} placeholder="Descripción del motivo de consulta" style={{ width: '100%' }} />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-
-        {/* ══════════════════════════════════════
-            SECCIÓN: ANTECEDENTES MÉDICOS
-        ══════════════════════════════════════ */}
-        <div style={{ marginTop: '18px' }}>
-
-          {/* Título de sección */}
-          <div style={{
-            backgroundColor: '#003d6b',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '12px',
-            letterSpacing: '1px',
-            padding: '5px 10px',
-            textTransform: 'uppercase',
-          }}>
-            Antecedentes Médicos
-          </div>
-
-          {/* Cuerpo: dos columnas */}
-          <div style={{ display: 'flex', border: '1px solid #b3d9ff', fontSize: '12px' }}>
-
-            {/* ── Columna izquierda: condiciones ── */}
-            <div style={{ flex: 1, borderRight: '1px solid #b3d9ff', padding: '10px 14px', backgroundColor: '#f0f7ff' }}>
-              {['Cardiopatías', 'Hipertensión / Hipotensión', 'Diabetes', 'Asma', 'Anemia', 'Trastornos tiroideos', 'Epilepsia', 'Trastornos de coagulación', 'Embarazo'].map((cond) => (
-                <label key={cond} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px', cursor: 'pointer' }}>
-                  <input type="checkbox" name={`cond_${cond}`} onChange={manejarCambio} style={{ width: '14px', height: '14px' }} />
-                  {cond}
-                </label>
-              ))}
-              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px', cursor: 'pointer' }}>
-                <input type="checkbox" name="cond_autoinmunes" onChange={manejarCambio} style={{ width: '14px', height: '14px' }} />
-                Enfermedades autoinmunes:
-                <input type="text" className="inp" name="autoinmunes_detalle" onChange={manejarCambio} style={{ flex: 1 }} />
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                <input type="checkbox" name="cond_otras" onChange={manejarCambio} style={{ width: '14px', height: '14px' }} />
-                Otras:
-                <input type="text" className="inp" name="otras_detalle" onChange={manejarCambio} style={{ flex: 1 }} />
-              </label>
-            </div>
-
-            {/* ── Columna derecha: preguntas Sí/No ── */}
-            <div style={{ flex: 1, padding: '10px 14px', backgroundColor: '#f0f7ff', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <input type="checkbox" name="fuma" onChange={manejarCambio} style={{ width: '14px', height: '14px' }} />
-                ¿Fuma?
-                <input type="text" className="inp" name="fuma_detalle" onChange={manejarCambio} placeholder="Cantidad / tipo" style={{ flex: 1 }} />
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <input type="checkbox" name="alcohol" onChange={manejarCambio} style={{ width: '14px', height: '14px' }} />
-                ¿Consume alcohol con frecuencia?
-                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}><input type="radio" name="alcohol_rta" value="Si" onChange={manejarCambio} /> Sí</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}><input type="radio" name="alcohol_rta" value="No" onChange={manejarCambio} /> No</label>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <input type="checkbox" name="hiloDental" onChange={manejarCambio} style={{ width: '14px', height: '14px' }} />
-                ¿Usa hilo dental?
-                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}><input type="radio" name="hilo_frec" value="1" onChange={manejarCambio} /> 1 vez/día</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}><input type="radio" name="hilo_frec" value="3" onChange={manejarCambio} /> 3 veces/día</label>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <input type="checkbox" name="enjuague" onChange={manejarCambio} style={{ width: '14px', height: '14px' }} />
-                ¿Usa enjuague bucal?
-                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}><input type="radio" name="enjuague_rta" value="Si" onChange={manejarCambio} /> Sí</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}><input type="radio" name="enjuague_rta" value="No" onChange={manejarCambio} /> No</label>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <input type="checkbox" name="encias" onChange={manejarCambio} style={{ width: '14px', height: '14px' }} />
-                ¿Sangran sus encías?
-                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}><input type="radio" name="encias_rta" value="Si" onChange={manejarCambio} /> Sí</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}><input type="radio" name="encias_rta" value="No" onChange={manejarCambio} /> No</label>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <input type="checkbox" name="sensibilidad" onChange={manejarCambio} style={{ width: '14px', height: '14px' }} />
-                ¿Siente sensibilidad dental?
-                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}><input type="radio" name="sensibilidad_rta" value="Si" onChange={manejarCambio} /> Sí</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}><input type="radio" name="sensibilidad_rta" value="No" onChange={manejarCambio} /> No</label>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <input type="checkbox" name="bruxismo" onChange={manejarCambio} style={{ width: '14px', height: '14px' }} />
-                ¿Bruxismo (aprieta o rechina los dientes)?
-                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}><input type="radio" name="bruxismo_rta" value="Si" onChange={manejarCambio} /> Sí</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}><input type="radio" name="bruxismo_rta" value="No" onChange={manejarCambio} /> No</label>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <input type="checkbox" name="reacciones" onChange={manejarCambio} style={{ width: '14px', height: '14px' }} />
-                ¿Tuvo reacciones adversas?
-                <input type="text" className="inp" name="reacciones_detalle" onChange={manejarCambio} placeholder="Especificar" style={{ flex: 1 }} />
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        {/* ══════════════════════════════════════
-            SECCIÓN: HISTORIA ODONTOLÓGICA
-        ══════════════════════════════════════ */}
-        <div style={{ marginTop: '18px' }}>
-
-          {/* Título */}
-          <div style={{
-            backgroundColor: '#003d6b',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '12px',
-            letterSpacing: '1px',
-            padding: '5px 10px',
-            textTransform: 'uppercase',
-          }}>
-            Historia Odontológica
-          </div>
-
-          {/* Preguntas */}
-          <div style={{
-            border: '1px solid #b3d9ff',
-            backgroundColor: '#f0f7ff',
-            padding: '10px 14px',
-            fontSize: '12px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-          }}>
-
-            {[
-              { name: 'cepilla', label: '¿Se cepilla los dientes diariamente?' },
-              { name: 'hiloDental2', label: '¿Usa hilo dental?' },
-              { name: 'enjuague2', label: '¿Usa enjuague bucal?' },
-              { name: 'encias2', label: '¿Sangran sus encías?' },
-              { name: 'tejidos', label: '¿Lesiones de tejidos blandos?' },
-            ].map(({ name, label }) => (
-              <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ minWidth: '280px' }}>{label}</span>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                  <input type="radio" name={name} value="Si" onChange={manejarCambio} /> Sí
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                  <input type="radio" name={name} value="No" onChange={manejarCambio} /> No
-                </label>
-              </div>
-            ))}
-
-          </div>
-        </div>
-
-        {/* ══════════════════════════════════════
-            SECCIÓN: DIAGNÓSTICO
-        ══════════════════════════════════════ */}
-        <div style={{ marginTop: '18px' }}>
-
-          {/* Título */}
-          <div style={{
-            backgroundColor: '#003d6b',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '12px',
-            letterSpacing: '1px',
-            padding: '5px 10px',
-            textTransform: 'uppercase',
-            textAlign: 'center',
-          }}>
-            Diagnóstico
-          </div>
-
-          {/* Área de escritura libre */}
-          <textarea
-            name="diagnostico"
-            onChange={manejarCambio}
-            placeholder="Escribir diagnóstico aquí..."
-            style={{
-              width: '100%',
-              minHeight: '100px',
-              border: '1px solid #b3d9ff',
-              borderTop: 'none',
-              backgroundColor: '#fff',
-              resize: 'vertical',
-              padding: '10px 14px',
-              fontFamily: 'Arial, sans-serif',
-              fontSize: '12px',
-              color: '#000',
-              outline: 'none',
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
-
       </div>
 
-      {/* Botón al final — no se imprime */}
-      <button
-        className="no-print"
-        onClick={manejarImpresion}
-        style={{
-          marginTop: '24px',
-          padding: '12px 48px',
-          backgroundColor: '#0056b3',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '16px',
-          fontWeight: 'bold',
-          boxShadow: '0 2px 8px rgba(0,86,179,0.4)',
-        }}
-      >
-        🖨️ Guardar como PDF / Imprimir
-      </button>
+      {/* ── Cuerpo ── */}
+      <div className="form-body">
+        <div className="form-card">
 
+          {/* Encabezado */}
+          <div className="form-header">
+            <h2 className="form-title">
+              {editandoId ? 'Editar Historia Clínica' : 'Nueva Historia Clínica'}
+            </h2>
+          </div>
+
+          {/* Secciones */}
+          <div className="form-inner">
+            <DatosPersonales onChange={manejarCambio} valores={datos} />
+            <AntecedentesMedicos onChange={manejarCambio} valores={datos} />
+            <HistoriaOdontologica onChange={manejarCambio} valores={datos} />
+            <Diagnostico onChange={manejarCambio} valores={datos} />
+          </div>
+
+          {/* Acciones */}
+          <div className="form-actions no-print">
+            <button className="btn-save" onClick={guardarHistoria} disabled={guardando}>
+              {guardando ? '⏳ Guardando...' : editandoId ? '💾 Guardar cambios' : '💾 Guardar Historia'}
+            </button>
+            <button className="btn-print" onClick={manejarImpresion}>🖨️ Imprimir / PDF</button>
+            <button className="btn-cancel-form" onClick={() => setVista('dashboard')}>✕ Cancelar</button>
+          </div>
+
+          {/* Toast */}
+          {estadoGuardado === 'ok' && <div className="toast toast-ok">✅ Guardado correctamente — volviendo al panel...</div>}
+          {estadoGuardado === 'error' && <div className="toast toast-error">❌ Error al guardar. Verificá tu conexión.</div>}
+
+        </div>
+      </div>
     </div>
-
-
   );
 }
 
