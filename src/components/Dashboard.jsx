@@ -1,53 +1,55 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 
 function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
-    const [registros, setRegistros] = useState([]);
-    const [cargando, setCargando] = useState(true);
-    const [busqueda, setBusqueda] = useState('');
-    const [eliminando, setEliminando] = useState(null); // id del registro a confirmar eliminación
+  const [registros, setRegistros] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [busqueda, setBusqueda] = useState('');
+  const [eliminando, setEliminando] = useState(null); // id del registro a confirmar eliminación
 
-    const cargarRegistros = useCallback(async () => {
-        setCargando(true);
-        const { data, error } = await supabase
-            .from('historias_clinicas')
-            .select('id, created_at, fecha, nombre, dni, motivo_consulta, diagnostico')
-            .order('created_at', { ascending: false });
+  const cargarRegistros = useCallback(async () => {
+    setCargando(true);
+    const { data, error } = await supabase
+      .from('historias_clinicas')
+      .select('id, created_at, fecha, nombre, dni, motivo_consulta, diagnostico')
+      .order('created_at', { ascending: false });
 
-        if (!error) setRegistros(data || []);
-        setCargando(false);
-    }, []);
+    if (!error) setRegistros(data || []);
+    setCargando(false);
+  }, []);
 
-    useEffect(() => {
-        cargarRegistros();
-    }, [cargarRegistros]);
+  useEffect(() => {
+    cargarRegistros();
+  }, [cargarRegistros]);
 
-    const eliminar = async (id) => {
-        const { error } = await supabase.from('historias_clinicas').delete().eq('id', id);
-        if (!error) {
-            setRegistros((prev) => prev.filter((r) => r.id !== id));
-        }
-        setEliminando(null);
-    };
+  const eliminar = async (id) => {
+    const { error } = await supabase.from('historias_clinicas').delete().eq('id', id);
+    if (!error) {
+      setRegistros((prev) => prev.filter((r) => r.id !== id));
+    }
+    setEliminando(null);
+  };
 
-    const registrosFiltrados = registros.filter((r) => {
-        const q = busqueda.toLowerCase();
-        return (
-            (r.nombre || '').toLowerCase().includes(q) ||
-            (r.dni || '').toLowerCase().includes(q) ||
-            (r.motivo_consulta || '').toLowerCase().includes(q)
-        );
-    });
-
-    const fmtFecha = (str) => {
-        if (!str) return '—';
-        const [y, m, d] = str.split('-');
-        return `${d}/${m}/${y}`;
-    };
-
+  const registrosFiltrados = registros.filter((r) => {
+    const q = busqueda.toLowerCase();
     return (
-        <>
-            <style>{`
+      (r.nombre || '').toLowerCase().includes(q) ||
+      (r.dni || '').toLowerCase().includes(q) ||
+      (r.motivo_consulta || '').toLowerCase().includes(q)
+    );
+  });
+
+  const fmtFecha = (str) => {
+    if (!str) return '—';
+    const [y, m, d] = str.split('-');
+    return `${d}/${m}/${y}`;
+  };
+
+  return (
+    <>
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
         .db-wrapper {
@@ -71,7 +73,7 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
         .db-topbar-brand {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 5px;
           color: white;
           font-size: 18px;
           font-weight: 700;
@@ -191,19 +193,18 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
           box-shadow: 0 0 0 3px rgba(0,170,228,0.15);
         }
 
-        /* ── Tabla ── */
+        /* ── Tabla PrimeReact ── */
         .db-table-wrap {
           background: rgba(255,255,255,0.04);
           border: 1px solid rgba(255,255,255,0.09);
           border-radius: 14px;
           overflow: hidden;
         }
-        .db-table {
-          width: 100%;
-          border-collapse: collapse;
+        .db-primetable {
+          font-family: 'Inter', Arial, sans-serif;
           font-size: 13px;
         }
-        .db-table th {
+        .db-primetable .p-datatable-thead > tr > th {
           background: rgba(0,170,228,0.12);
           color: rgba(255,255,255,0.6);
           font-size: 10px;
@@ -211,17 +212,81 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
           text-transform: uppercase;
           letter-spacing: 0.8px;
           padding: 12px 16px;
-          text-align: left;
           border-bottom: 1px solid rgba(255,255,255,0.08);
+          border-top: none;
         }
-        .db-table td {
-          padding: 13px 16px;
+        .db-primetable .p-datatable-tbody > tr {
+          background: transparent;
           color: rgba(255,255,255,0.85);
-          border-bottom: 1px solid rgba(255,255,255,0.05);
-          vertical-align: middle;
+          transition: background 0.2s;
         }
-        .db-table tr:last-child td { border-bottom: none; }
-        .db-table tr:hover td { background: rgba(255,255,255,0.04); }
+        .db-primetable .p-datatable-tbody > tr > td {
+          padding: 13px 16px;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .db-primetable .p-datatable-tbody > tr:hover {
+          background: rgba(255,255,255,0.04);
+        }
+        .db-primetable .p-paginator {
+          background: transparent;
+          border-top: 1px solid rgba(255,255,255,0.05);
+          padding: 12px;
+        }
+        .p-paginator .p-paginator-pages .p-paginator-page,
+        .p-paginator .p-paginator-first, .p-paginator .p-paginator-prev, 
+        .p-paginator .p-paginator-next, .p-paginator .p-paginator-last {
+          background: rgba(255,255,255,0.04);
+          color: rgba(255,255,255,0.6);
+          border-radius: 6px;
+          margin: 0 3px;
+          border: none;
+        }
+        .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+          background: rgba(0,170,228,0.15);
+          color: #00aae4;
+          border: 1px solid rgba(0,170,228,0.4);
+        }
+
+        /* ── PrimeReact Dropdown Overrides (Fix for reset CSS) ── */
+        .p-paginator .p-dropdown {
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 6px;
+          color: white;
+          min-height: 36px;
+          align-items: center;
+        }
+        .p-paginator .p-dropdown .p-dropdown-label {
+          padding: 0 12px;
+          display: flex;
+          align-items: center;
+        }
+        .p-dropdown-panel {
+          background: #0d2444;
+          border: 1px solid rgba(0,170,228,0.3);
+          border-radius: 8px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+          font-family: 'Inter', Arial, sans-serif;
+          font-size: 13px;
+        }
+        .p-dropdown-panel .p-dropdown-items {
+          padding: 4px 0;
+          list-style-type: none;
+        }
+        .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+          padding: 10px 16px;
+          color: rgba(255,255,255,0.85);
+          transition: background 0.2s;
+          cursor: pointer;
+        }
+        .p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight {
+          background: rgba(0,170,228,0.3) !important;
+          color: #00aae4;
+          font-weight: 600;
+        }
+        .p-dropdown-panel .p-dropdown-items .p-dropdown-item:not(.p-highlight):hover {
+          background: rgba(0,170,228,0.15);
+        }
 
         .db-badge-nombre {
           font-weight: 600;
@@ -241,11 +306,28 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
           color: rgba(255,255,255,0.55);
           font-style: italic;
           max-width: 220px;
+          display: block;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
 
+        .db-diagnostico {
+          color: rgba(255,255,255,0.65);
+          font-style: italic;
+          min-width: 200px;
+          max-width: 400px;
+          display: block;
+          white-space: pre-line;
+          word-break: break-word;
+          line-height: 1.4;
+        }
+
+        .db-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
         .btn-edit {
           padding: 5px 12px;
           background: rgba(0,170,228,0.15);
@@ -257,7 +339,9 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
           font-family: 'Inter', Arial, sans-serif;
           cursor: pointer;
           transition: background 0.2s, color 0.2s;
-          margin-right: 6px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
         }
         .btn-edit:hover { background: #00aae4; color: white; }
 
@@ -272,6 +356,9 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
           font-family: 'Inter', Arial, sans-serif;
           cursor: pointer;
           transition: background 0.2s, color 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .btn-del:hover { background: #cc2200; color: white; border-color: #cc2200; }
 
@@ -343,129 +430,116 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
         .btn-confirmar-del:hover { opacity: 0.88; }
       `}</style>
 
-            {/* ── Modal confirmación de eliminación ── */}
-            {eliminando && (
-                <div className="db-overlay">
-                    <div className="db-modal">
-                        <div className="db-modal-icon">🗑️</div>
-                        <div className="db-modal-title">¿Eliminar registro?</div>
-                        <div className="db-modal-msg">Esta acción no se puede deshacer. El registro será eliminado permanentemente.</div>
-                        <div className="db-modal-actions">
-                            <button className="btn-cancel" onClick={() => setEliminando(null)}>Cancelar</button>
-                            <button className="btn-confirmar-del" onClick={() => eliminar(eliminando)}>Sí, eliminar</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div className="db-wrapper">
-
-                {/* ── Topbar ── */}
-                <div className="db-topbar">
-                    <div className="db-topbar-brand">
-                        🦷 Historia<span>Clínica</span>
-                    </div>
-                    <div className="db-topbar-right">
-                        <div className="db-user-badge">👤 {usuario}</div>
-                        <button className="btn-primary" onClick={onNueva}>+ Nueva historia</button>
-                        <button className="btn-ghost-red" onClick={onCerrarSesion}>Cerrar sesión</button>
-                    </div>
-                </div>
-
-                {/* ── Contenido ── */}
-                <div className="db-content">
-
-                    {/* KPIs */}
-                    <div className="db-kpis">
-                        <div className="db-kpi">
-                            <div className="db-kpi-label">Total de registros</div>
-                            <div className="db-kpi-value">{registros.length}</div>
-                        </div>
-                        <div className="db-kpi">
-                            <div className="db-kpi-label">Este mes</div>
-                            <div className="db-kpi-value">
-                                {registros.filter(r => {
-                                    const d = new Date(r.created_at);
-                                    const now = new Date();
-                                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                                }).length}
-                            </div>
-                        </div>
-                        <div className="db-kpi">
-                            <div className="db-kpi-label">Resultados filtrados</div>
-                            <div className="db-kpi-value">{registrosFiltrados.length}</div>
-                        </div>
-                    </div>
-
-                    {/* Toolbar */}
-                    <div className="db-toolbar">
-                        <input
-                            type="text"
-                            className="db-search"
-                            placeholder="🔍  Buscar por nombre, DNI o motivo..."
-                            value={busqueda}
-                            onChange={(e) => setBusqueda(e.target.value)}
-                        />
-                        <button className="btn-primary" onClick={cargarRegistros}>↺ Actualizar</button>
-                    </div>
-
-                    {/* Tabla */}
-                    <div className="db-table-wrap">
-                        {cargando ? (
-                            <div className="db-empty">
-                                <div className="db-empty-icon">⏳</div>
-                                <div className="db-empty-msg">Cargando registros...</div>
-                            </div>
-                        ) : registrosFiltrados.length === 0 ? (
-                            <div className="db-empty">
-                                <div className="db-empty-icon">{busqueda ? '🔍' : '📋'}</div>
-                                <div className="db-empty-msg">
-                                    {busqueda ? 'No se encontraron resultados para tu búsqueda' : 'No hay historias clínicas registradas aún'}
-                                </div>
-                            </div>
-                        ) : (
-                            <table className="db-table">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Paciente</th>
-                                        <th>DNI</th>
-                                        <th>Motivo de consulta</th>
-                                        <th>Diagnóstico</th>
-                                        <th>Registrado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {registrosFiltrados.map((r) => (
-                                        <tr key={r.id}>
-                                            <td>{fmtFecha(r.fecha)}</td>
-                                            <td><span className="db-badge-nombre">{r.nombre || '—'}</span></td>
-                                            <td>
-                                                {r.dni
-                                                    ? <span className="db-badge-dni">{r.dni}</span>
-                                                    : '—'}
-                                            </td>
-                                            <td><span className="db-motivo">{r.motivo_consulta || '—'}</span></td>
-                                            <td><span className="db-motivo">{r.diagnostico || '—'}</span></td>
-                                            <td style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>
-                                                {new Date(r.created_at).toLocaleDateString('es-AR')}
-                                            </td>
-                                            <td>
-                                                <button className="btn-edit" onClick={() => onEditar(r.id)}>✏️ Editar</button>
-                                                <button className="btn-del" onClick={() => setEliminando(r.id)}>🗑️</button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-
-                </div>
+      {/* ── Modal confirmación de eliminación ── */}
+      {eliminando && (
+        <div className="db-overlay">
+          <div className="db-modal">
+            <div className="db-modal-icon">🗑️</div>
+            <div className="db-modal-title">¿Eliminar registro?</div>
+            <div className="db-modal-msg">Esta acción no se puede deshacer. El registro será eliminado permanentemente.</div>
+            <div className="db-modal-actions">
+              <button className="btn-cancel" onClick={() => setEliminando(null)}>Cancelar</button>
+              <button className="btn-confirmar-del" onClick={() => eliminar(eliminando)}>Sí, eliminar</button>
             </div>
-        </>
-    );
+          </div>
+        </div>
+      )}
+
+      <div className="db-wrapper">
+
+        {/* ── Topbar ── */}
+        <div className="db-topbar">
+          <div className="db-topbar-brand">
+            🦷 Historia<span>Clínica</span>
+          </div>
+          <div className="db-topbar-right">
+            <div className="db-user-badge">👤 {usuario}</div>
+            <button className="btn-primary" onClick={onNueva}>+ Nueva historia</button>
+            <button className="btn-ghost-red" onClick={onCerrarSesion}>Cerrar sesión</button>
+          </div>
+        </div>
+
+        {/* ── Contenido ── */}
+        <div className="db-content">
+
+          {/* KPIs */}
+          <div className="db-kpis">
+            <div className="db-kpi">
+              <div className="db-kpi-label">Total de registros</div>
+              <div className="db-kpi-value">{registros.length}</div>
+            </div>
+            <div className="db-kpi">
+              <div className="db-kpi-label">Este mes</div>
+              <div className="db-kpi-value">
+                {registros.filter(r => {
+                  const d = new Date(r.created_at);
+                  const now = new Date();
+                  return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                }).length}
+              </div>
+            </div>
+            <div className="db-kpi">
+              <div className="db-kpi-label">Resultados filtrados</div>
+              <div className="db-kpi-value">{registrosFiltrados.length}</div>
+            </div>
+          </div>
+
+          {/* Toolbar */}
+          <div className="db-toolbar">
+            <input
+              type="text"
+              className="db-search"
+              placeholder="🔍  Buscar por nombre, DNI o motivo..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+            <button className="btn-primary" onClick={cargarRegistros}>↺ Actualizar</button>
+          </div>
+
+          {/* Tabla */}
+          <div className="db-table-wrap">
+            {cargando ? (
+              <div className="db-empty">
+                <div className="db-empty-icon">⏳</div>
+                <div className="db-empty-msg">Cargando registros...</div>
+              </div>
+            ) : registrosFiltrados.length === 0 ? (
+              <div className="db-empty">
+                <div className="db-empty-icon">{busqueda ? '🔍' : '📋'}</div>
+                <div className="db-empty-msg">
+                  {busqueda ? 'No se encontraron resultados para tu búsqueda' : 'No hay historias clínicas registradas aún'}
+                </div>
+              </div>
+            ) : (
+              <DataTable
+                value={registrosFiltrados}
+                className="db-primetable"
+                paginator
+                rows={10}
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                dataKey="id"
+                emptyMessage="No se encontraron registros."
+              >
+                <Column field="fecha" header="Fecha" body={(r) => fmtFecha(r.fecha)} sortable />
+                <Column field="nombre" header="Paciente" body={(r) => <span className="db-badge-nombre">{r.nombre || '—'}</span>} sortable />
+                <Column field="dni" header="DNI" body={(r) => r.dni ? <span className="db-badge-dni">{r.dni}</span> : '—'} sortable />
+                <Column field="motivo_consulta" header="Motivo de consulta" body={(r) => <span className="db-motivo" title={r.motivo_consulta}>{r.motivo_consulta || '—'}</span>} sortable />
+                <Column field="diagnostico" header="Diagnóstico" body={(r) => <span className="db-diagnostico">{r.diagnostico || '—'}</span>} sortable />
+                <Column field="created_at" header="Registrado" body={(r) => <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{new Date(r.created_at).toLocaleDateString('es-AR')}</span>} sortable />
+                <Column header="Acciones" body={(r) => (
+                  <div className="db-actions">
+                    <button className="btn-edit" onClick={() => onEditar(r.id)}>✏️</button>
+                    <button className="btn-del" onClick={() => setEliminando(r.id)} title="Eliminar">🗑️</button>
+                  </div>
+                )} />
+              </DataTable>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default Dashboard;
