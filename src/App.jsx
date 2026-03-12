@@ -6,6 +6,7 @@ import DatosPersonales from './components/DatosPersonales';
 import AntecedentesMedicos from './components/AntecedentesMedicos';
 import HistoriaOdontologica from './components/HistoriaOdontologica';
 import Diagnostico from './components/Diagnostico';
+import SeguimientoTratamiento from './components/SeguimientoTratamiento';
 
 // ── Convierte una fila de Supabase → estado del formulario ──
 function rowToForm(r) {
@@ -51,6 +52,7 @@ function rowToForm(r) {
     encias2: r.encias2 || '',
     tejidos: r.tejidos || '',
     diagnostico: r.diagnostico || '',
+    seguimiento: r.seguimiento || [],
   };
 }
 
@@ -99,6 +101,7 @@ function formToRow(datos, userId) {
     encias2: datos.encias2 || null,
     tejidos: datos.tejidos || null,
     diagnostico: datos.diagnostico || null,
+    seguimiento: datos.seguimiento || [],
   };
 }
 
@@ -557,6 +560,7 @@ function App() {
             <AntecedentesMedicos onChange={manejarCambio} valores={datos} />
             <HistoriaOdontologica onChange={manejarCambio} valores={datos} />
             <Diagnostico onChange={manejarCambio} valores={datos} />
+            {/*<SeguimientoTratamiento onChange={manejarCambio} valores={datos} />*/}
           </div>
 
           {/* Acciones */}
