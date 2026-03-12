@@ -1,0 +1,27 @@
+name: Sincronizar main hacia develop
+
+# Se ejecuta cada vez que hay un push a la rama main (incluye cuando se aprueba un Pull Request)
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Necesario para traer el historial completo y poder hacer merge
+
+      - name: Configurar usuario de Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Hacer merge de main a develop
+        run: |
+          git checkout develop
+          git merge origin/main --no-edit
+          git push origin develop
