@@ -52,7 +52,7 @@ function rowToForm(r) {
     encias2: r.encias2 || '',
     tejidos: r.tejidos || '',
     diagnostico: r.diagnostico || '',
-    seguimiento: r.seguimiento || [],
+    seguimiento: [],      // se carga por separado desde seguimiento_tratamiento
   };
 }
 
@@ -101,7 +101,7 @@ function formToRow(datos, userId) {
     encias2: datos.encias2 || null,
     tejidos: datos.tejidos || null,
     diagnostico: datos.diagnostico || null,
-    seguimiento: datos.seguimiento || [],
+    // seguimiento se guarda en tabla separada, no aquí
   };
 }
 
@@ -147,7 +147,25 @@ function App() {
       .single();
 
     if (!error && data) {
-      setDatos(rowToForm(data));
+      // Cargar también las filas de seguimiento desde la tabla separada
+      const { data: seguimientoData } = await supabase
+        .from('seguimiento_tratamiento')
+        .select('*')
+        .eq('historia_id', id)
+        .order('created_at', { ascending: true });
+
+      const formData = rowToForm(data);
+      formData.seguimiento = (seguimientoData || []).map(s => ({
+        fecha:         s.fecha        || '',
+        tratamiento:   s.tratamiento  || '',
+        diente:        s.diente       || '',
+        caras:         s.caras        || '',
+        observaciones: s.observaciones || '',
+        presupuesto:   s.presupuesto != null ? String(s.presupuesto) : '',
+        entrega:       s.entrega      != null ? String(s.entrega)     : '',
+      }));
+
+      setDatos(formData);
       setEditandoId(id);
       setEstadoGuardado(null);
       setVista('editar');
@@ -159,9 +177,12 @@ function App() {
     setGuardando(true);
     setEstadoGuardado(null);
 
-    const registro = formToRow(datos, sessionId);
+    const registro  = formToRow(datos, sessionId);
+    const seguimientoFilas = datos.seguimiento || [];
 
     let error;
+    let historiaId = editandoId;
+
     if (editandoId) {
       // Modo edición → UPDATE
       ({ error } = await supabase
@@ -169,10 +190,46 @@ function App() {
         .update(registro)
         .eq('id', editandoId));
     } else {
-      // Modo nuevo → INSERT
-      ({ error } = await supabase
+      // Modo nuevo → INSERT (necesitamos el ID para ligar el seguimiento)
+      const { data: inserted, error: insertError } = await supabase
         .from('historias_clinicas')
-        .insert(registro));
+        .insert(registro)
+        .select('id')
+        .single();
+      error      = insertError;
+      historiaId = inserted?.id ?? null;
+    }
+
+    // ── Guardar seguimiento en tabla separada ──
+    if (!error && historiaId) {
+      // 1. Borrar filas anteriores de esta historia
+      await supabase
+        .from('seguimiento_tratamiento')
+        .delete()
+        .eq('historia_id', historiaId);
+
+      // 2. Insertar filas nuevas (omitir filas completamente vacías)
+      const filasValidas = seguimientoFilas.filter(
+        f => f.fecha || f.tratamiento || f.diente || f.caras || f.observaciones || f.presupuesto || f.entrega
+      );
+
+      if (filasValidas.length > 0) {
+        const { error: seguimientoError } = await supabase
+          .from('seguimiento_tratamiento')
+          .insert(
+            filasValidas.map(f => ({
+              historia_id:   historiaId,
+              fecha:         f.fecha        || null,
+              tratamiento:   f.tratamiento  || null,
+              diente:        f.diente       || null,
+              caras:         f.caras        || null,
+              observaciones: f.observaciones || null,
+              presupuesto:   parseFloat((f.presupuesto || '').replace(/\./g, '').replace(',', '.')) || 0,
+              entrega:       parseFloat((f.entrega     || '').replace(/\./g, '').replace(',', '.')) || 0,
+            }))
+          );
+        if (seguimientoError) error = seguimientoError;
+      }
     }
 
     setGuardando(false);
@@ -180,9 +237,10 @@ function App() {
       setEstadoGuardado('ok');
       setTimeout(() => {
         setEstadoGuardado(null);
-        setVista('dashboard'); // volver al dashboard tras guardar
+        setVista('dashboard');
       }, 1800);
     } else {
+      console.error('Error al guardar:', error);
       setEstadoGuardado('error');
     }
   };
@@ -560,7 +618,7 @@ function App() {
             <AntecedentesMedicos onChange={manejarCambio} valores={datos} />
             <HistoriaOdontologica onChange={manejarCambio} valores={datos} />
             <Diagnostico onChange={manejarCambio} valores={datos} />
-            {/*<SeguimientoTratamiento onChange={manejarCambio} valores={datos} />*/}
+            <SeguimientoTratamiento onChange={manejarCambio} valores={datos} />
           </div>
 
           {/* Acciones */}
