@@ -59,7 +59,6 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
           display: flex;
           flex-direction: column;
         }
-
         /* ── Topbar ── */
         .db-topbar {
           display: flex;
