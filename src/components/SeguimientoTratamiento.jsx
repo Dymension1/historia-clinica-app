@@ -5,6 +5,7 @@ import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { addLocale } from 'primereact/api';
+import './SeguimientoTratamiento.css';
 
 addLocale('es', {
     firstDayOfWeek: 1,
@@ -53,6 +54,12 @@ function calcularSaldo(presupuesto, entrega) {
     return '$' + s.toLocaleString('es-AR', { minimumFractionDigits: 2 });
 }
 
+function getSaldoClass(saldo) {
+    if (!saldo) return 'st-saldo st-saldo--vacio';
+    if (saldo.startsWith('$0')) return 'st-saldo st-saldo--pagado';
+    return 'st-saldo st-saldo--pendiente';
+}
+
 function SeguimientoTratamiento({ onChange, valores = {} }) {
     const [filas, setFilas] = useState(() => {
         if (valores.seguimiento && Array.isArray(valores.seguimiento) && valores.seguimiento.length > 0) {
@@ -61,7 +68,6 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
         return Array.from({ length: FILAS_INICIALES }, filaVacia);
     });
 
-    // Sincronizar al padre cada vez que cambian las filas
     useEffect(() => {
         onChange({ target: { name: 'seguimiento', value: filas } });
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -80,121 +86,8 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
         setFilas(prev => prev.filter((_, i) => i !== idx));
     };
 
-    // Estilos
-    const thStyle = {
-        padding: '7px 8px',
-        fontSize: '10px',
-        fontWeight: '700',
-        letterSpacing: '0.8px',
-        textTransform: 'uppercase',
-        color: '#00aae4',
-        borderBottom: '2px solid rgba(0,170,228,0.35)',
-        borderRight: '1px solid rgba(255,255,255,0.07)',
-        background: 'rgba(0,170,228,0.08)',
-        whiteSpace: 'nowrap',
-        fontFamily: "'Inter', Arial, sans-serif",
-    };
-
-    const tdStyle = {
-        padding: '4px 6px',
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
-        borderRight: '1px solid rgba(255,255,255,0.05)',
-        verticalAlign: 'middle',
-    };
-
-
-
-    const saldoStyle = (saldo) => ({
-        fontSize: '12px',
-        fontWeight: '600',
-        fontFamily: "'Inter', Arial, sans-serif",
-        color: saldo && saldo.startsWith('$0') ? '#4ade80' : saldo ? '#fbbf24' : 'rgba(255,255,255,0.3)',
-        textAlign: 'right',
-        padding: '2px 4px',
-    });
-
     return (
         <>
-            <style>{`
-            /* Overrides de Tabla Seguimiento Tratamiento para PrimeReact */
-            .pr-input-table {
-                border: none;
-                background: transparent;
-                outline: none;
-                color: rgba(255,255,255,0.88);
-                font-size: 13px;
-                font-family: 'Inter', Arial, sans-serif;
-                width: 100%;
-                padding: 4px;
-                box-shadow: none !important;
-                border-radius: 4px;
-                transition: background 0.2s;
-            }
-            .pr-input-table:focus {
-                background: rgba(0,170,228,0.06);
-            }
-            .pr-input-table::placeholder {
-                color: rgba(255,255,255,0.3);
-            }
-            
-            /* Dropdown Table */
-            .pr-dropdown-table {
-                background: transparent;
-                border: none;
-                width: 100%;
-                box-shadow: none !important;
-            }
-            .pr-dropdown-table .p-dropdown-label {
-                padding: 4px;
-                font-size: 13px;
-                font-family: 'Inter', Arial, sans-serif;
-                color: rgba(255,255,255,0.88);
-            }
-            .pr-dropdown-table .p-dropdown-trigger {
-                width: 1.5rem;
-                color: rgba(255,255,255,0.5);
-            }
-            .pr-dropdown-table:not(.p-disabled).p-focus {
-                box-shadow: none;
-                background: rgba(0,170,228,0.06);
-                border-radius: 4px;
-            }
-
-            /* Calendar Table */
-            .pr-calendar-table {
-                width: 100%;
-            }
-            .pr-calendar-table .p-inputtext {
-                border: none;
-                background: transparent;
-                color: rgba(255,255,255,0.88);
-                font-size: 13px;
-                padding: 4px;
-                width: 100%;
-                box-shadow: none !important;
-                font-family: 'Inter', Arial, sans-serif;
-                border-radius: 4px;
-                transition: background 0.2s;
-            }
-            .pr-calendar-table .p-inputtext:focus {
-                background: rgba(0,170,228,0.06);
-            }
-
-            .fecha-wrapper {
-                 position: relative;
-                 display: flex;
-                 align-items: center;
-                 border-radius: 4px;
-            }
-            .fecha-icon {
-                 font-size: 12px;
-                 color: rgba(0,170,228,0.7);
-                 margin-left: 4px;
-            }
-            .fecha-wrapper:hover .fecha-icon {
-                 color: #00aae4;
-            }
-        `}</style>
             <div style={{ marginTop: '22px' }}>
 
                 {/* Título */}
@@ -228,15 +121,15 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                         </colgroup>
                         <thead>
                             <tr>
-                                <th style={thStyle}>Fecha</th>
-                                <th style={thStyle}>Tratamiento</th>
-                                <th style={{ ...thStyle, textAlign: 'center' }}>Diente</th>
-                                <th style={{ ...thStyle, textAlign: 'center' }}>Caras</th>
-                                <th style={thStyle}>Observaciones</th>
-                                <th style={{ ...thStyle, textAlign: 'right' }}>Presupuesto</th>
-                                <th style={{ ...thStyle, textAlign: 'right' }}>Entrega</th>
-                                <th style={{ ...thStyle, textAlign: 'right', borderRight: 'none' }}>Saldo</th>
-                                <th style={{ ...thStyle, borderRight: 'none', padding: 0 }}></th>
+                                <th className="st-th">Fecha</th>
+                                <th className="st-th">Tratamiento</th>
+                                <th className="st-th st-th--center">Diente</th>
+                                <th className="st-th st-th--center">Caras</th>
+                                <th className="st-th">Observaciones</th>
+                                <th className="st-th st-th--right">Presupuesto</th>
+                                <th className="st-th st-th--right">Entrega</th>
+                                <th className="st-th st-th--right st-th--no-border">Saldo</th>
+                                <th className="st-th st-th--icon"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -254,7 +147,7 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                                         onMouseLeave={e => (e.currentTarget.style.background = esPar ? 'rgba(255,255,255,0.01)' : 'rgba(0,170,228,0.025)')}
                                     >
                                         {/* Fecha */}
-                                        <td style={tdStyle}>
+                                        <td className="st-td">
                                             <div className="fecha-wrapper">
                                                 <span className="fecha-icon">📅</span>
                                                 <Calendar
@@ -269,7 +162,7 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                                         </td>
 
                                         {/* Tratamiento */}
-                                        <td style={tdStyle}>
+                                        <td className="st-td">
                                             <Dropdown
                                                 className="pr-dropdown-table"
                                                 value={fila.tratamiento}
@@ -279,7 +172,7 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                                         </td>
 
                                         {/* Diente */}
-                                        <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                        <td className="st-td st-td--center">
                                             <InputText
                                                 className="pr-input-table"
                                                 style={{ textAlign: 'center' }}
@@ -291,7 +184,7 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                                         </td>
 
                                         {/* Caras */}
-                                        <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                        <td className="st-td st-td--center">
                                             <InputText
                                                 className="pr-input-table"
                                                 style={{ textAlign: 'center' }}
@@ -303,7 +196,7 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                                         </td>
 
                                         {/* Observaciones */}
-                                        <td style={tdStyle}>
+                                        <td className="st-td">
                                             <InputText
                                                 className="pr-input-table"
                                                 value={fila.observaciones}
@@ -313,7 +206,7 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                                         </td>
 
                                         {/* Presupuesto */}
-                                        <td style={{ ...tdStyle, textAlign: 'right' }}>
+                                        <td className="st-td st-td--right">
                                             <InputText
                                                 className="pr-input-table"
                                                 style={{ textAlign: 'right' }}
@@ -324,7 +217,7 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                                         </td>
 
                                         {/* Entrega */}
-                                        <td style={{ ...tdStyle, textAlign: 'right' }}>
+                                        <td className="st-td st-td--right">
                                             <InputText
                                                 className="pr-input-table"
                                                 style={{ textAlign: 'right' }}
@@ -335,12 +228,12 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                                         </td>
 
                                         {/* Saldo (calculado) */}
-                                        <td style={{ ...tdStyle, borderRight: 'none' }}>
-                                            <span style={saldoStyle(saldo)}>{saldo || '—'}</span>
+                                        <td className="st-td st-td--no-border">
+                                            <span className={getSaldoClass(saldo)}>{saldo || '—'}</span>
                                         </td>
 
                                         {/* Botón Eliminar */}
-                                        <td style={{ ...tdStyle, borderRight: 'none', textAlign: 'center', padding: '0 4px' }} className="no-print">
+                                        <td className="st-td st-td--acciones no-print">
                                             {filas.length > 1 && (
                                                 <button
                                                     type="button"
