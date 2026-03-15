@@ -1,0 +1,123 @@
+/* ════════════════════════════════════════════
+   CONTROLES PRIMEREACT EN LA TABLA
+   ════════════════════════════════════════════ */
+
+/* InputText */
+.pr-input-table {
+  border: none;
+  background: transparent;
+  outline: none;
+  color: rgba(255,255,255,0.88);
+  font-size: 13px;
+  font-family: 'Inter', Arial, sans-serif;
+  width: 100%;
+  padding: 4px;
+  box-shadow: none !important;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.pr-input-table:focus { background: rgba(0,170,228,0.06); }
+.pr-input-table::placeholder { color: rgba(255,255,255,0.3); }
+
+/* Dropdown */
+.pr-dropdown-table {
+  background: transparent;
+  border: none;
+  width: 100%;
+  box-shadow: none !important;
+}
+.pr-dropdown-table .p-dropdown-label {
+  padding: 4px;
+  font-size: 13px;
+  font-family: 'Inter', Arial, sans-serif;
+  color: rgba(255,255,255,0.88);
+}
+.pr-dropdown-table .p-dropdown-trigger {
+  width: 1.5rem;
+  color: rgba(255,255,255,0.5);
+}
+.pr-dropdown-table:not(.p-disabled).p-focus {
+  box-shadow: none;
+  background: rgba(0,170,228,0.06);
+  border-radius: 4px;
+}
+
+/* Calendar */
+.pr-calendar-table { width: 100%; }
+.pr-calendar-table .p-inputtext {
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.88);
+  font-size: 13px;
+  padding: 4px;
+  width: 100%;
+  box-shadow: none !important;
+  font-family: 'Inter', Arial, sans-serif;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.pr-calendar-table .p-inputtext:focus { background: rgba(0,170,228,0.06); }
+
+/* Wrapper de fecha */
+.fecha-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+.fecha-icon {
+  font-size: 12px;
+  color: rgba(0,170,228,0.7);
+  margin-left: 4px;
+}
+.fecha-wrapper:hover .fecha-icon { color: #00aae4; }
+
+/* ════════════════════════════════════════════
+   ENCABEZADOS DE LA TABLA
+   ════════════════════════════════════════════ */
+.st-th {
+  padding: 7px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #00aae4;
+  border-bottom: 2px solid rgba(0,170,228,0.35);
+  border-right: 1px solid rgba(255,255,255,0.07);
+  background: rgba(0,170,228,0.08);
+  white-space: nowrap;
+  font-family: 'Inter', Arial, sans-serif;
+}
+.st-th--center     { text-align: center; }
+.st-th--right      { text-align: right;  }
+.st-th--no-border  { border-right: none; }
+.st-th--icon       { border-right: none; padding: 0; }
+
+/* ════════════════════════════════════════════
+   CELDAS DE LA TABLA
+   ════════════════════════════════════════════ */
+.st-td {
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-right: 1px solid rgba(255,255,255,0.05);
+  vertical-align: middle;
+}
+.st-td--center    { text-align: center; }
+.st-td--right     { text-align: right;  }
+.st-td--no-border { border-right: none; }
+.st-td--acciones  { border-right: none; text-align: center; padding: 0 4px; }
+
+/* ════════════════════════════════════════════
+   SALDO CALCULADO
+   ════════════════════════════════════════════ */
+.st-saldo {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', Arial, sans-serif;
+  text-align: right;
+  padding: 2px 4px;
+  display: block;
+}
+.st-saldo--pagado   { color: #4ade80; }
+.st-saldo--pendiente { color: #fbbf24; }
+.st-saldo--vacio    { color: rgba(255,255,255,0.3); }
