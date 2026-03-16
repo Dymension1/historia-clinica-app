@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from './supabaseClient';
+import { useAuth } from './hooks/useAuth';
 import { useHistoriaClinica } from './hooks/useHistoriaClinica';
 import './styles/form.css';
 import Login from './components/Login';
@@ -11,8 +11,7 @@ import Diagnostico from './components/Diagnostico';
 import SeguimientoTratamiento from './components/SeguimientoTratamiento';
 
 function App() {
-  const [usuarioActivo, setUsuarioActivo] = useState(null);
-  const [sessionId, setSessionId] = useState(null);
+  const { usuario, userId, cargando, cerrarSesion } = useAuth();
   // vista: 'dashboard' | 'nueva' | 'editar'
   const [vista, setVista] = useState('dashboard');
 
@@ -29,13 +28,6 @@ function App() {
 
   const manejarImpresion = () => window.print();
 
-  const cerrarSesion = async () => {
-    await supabase.auth.signOut();
-    setUsuarioActivo(null);
-    setSessionId(null);
-    setVista('dashboard');
-  };
-
   const handleAbrirNueva = () => {
     abrirNueva();
     setVista('nueva');
@@ -46,13 +38,31 @@ function App() {
     setVista('editar');
   };
 
+  // ── Verificando sesión inicial (evita flash de login) ──
+  if (cargando) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(160deg, #0d1b2e 0%, #0a2744 60%, #0d3866 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: "'Inter', Arial, sans-serif",
+      }}>
+        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>
+          <div style={{ fontSize: '40px', marginBottom: '16px' }}>🦷</div>
+          <div style={{ fontSize: '13px', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Verificando sesión...</div>
+        </div>
+      </div>
+    );
+  }
+
   // ── Sin sesión → Login ──
-  if (!usuarioActivo) {
+  if (!usuario) {
     return (
       <Login
-        onLogin={(email, userId) => {
-          setUsuarioActivo(email);
-          setSessionId(userId);
+        onLogin={() => {
+          // La sesión es manejada por onAuthStateChange en el useEffect
         }}
       />
     );
@@ -62,7 +72,7 @@ function App() {
   if (vista === 'dashboard') {
     return (
       <Dashboard
-        usuario={usuarioActivo}
+        usuario={usuario}
         onNueva={handleAbrirNueva}
         onEditar={handleAbrirEditar}
         onCerrarSesion={cerrarSesion}
@@ -78,22 +88,18 @@ function App() {
       <div className="form-topbar no-print">
         <div className="form-topbar-brand">🦷 Historia<span>Clínica</span></div>
         <div className="form-topbar-right">
-          <button className="btn-back" onClick={() => setVista('dashboard')}>← Panel</button>
-          <div className="form-user-badge">👤 {usuarioActivo}</div>
+          <div className="form-user-badge">👤 {usuario}</div>
+          <button className="btn-back" onClick={() => setVista('dashboard')}>← Dashboard</button>
           <button className="btn-logout-form" onClick={cerrarSesion}>Cerrar sesión</button>
         </div>
       </div>
 
       {/* ── Cuerpo ── */}
       <div className="form-body">
+        <h1 className="form-page-title">
+          {editandoId ? 'Editar Historia Clínica' : 'Nueva Historia Clínica'}
+        </h1>
         <div className="form-card">
-
-          {/* Encabezado */}
-          <div className="form-header">
-            <h2 className="form-title">
-              {editandoId ? 'Editar Historia Clínica' : 'Nueva Historia Clínica'}
-            </h2>
-          </div>
 
           {/* Secciones — key fuerza re-montaje al cambiar de registro */}
           <div className="form-inner" key={editandoId || 'nuevo'}>
@@ -106,7 +112,7 @@ function App() {
 
           {/* Acciones */}
           <div className="form-actions no-print">
-            <button className="btn-save" onClick={() => guardarHistoria(sessionId)} disabled={guardando}>
+            <button className="btn-save" onClick={() => guardarHistoria(userId)} disabled={guardando}>
               {guardando ? '⏳ Guardando...' : editandoId ? '💾 Guardar cambios' : '💾 Guardar Historia'}
             </button>
             <button className="btn-print" onClick={manejarImpresion}>🖨️ Imprimir / PDF</button>

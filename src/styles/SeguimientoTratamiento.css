@@ -121,3 +121,94 @@
 .st-saldo--pagado   { color: #4ade80; }
 .st-saldo--pendiente { color: #fbbf24; }
 .st-saldo--vacio    { color: rgba(255,255,255,0.3); }
+
+/* ════════════════════════════════════════════
+   TABLA Y ACCIONES ESPECÍFICAS
+   ════════════════════════════════════════════ */
+.st-table-container {
+  overflow-x: auto;
+}
+
+.st-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 820px;
+}
+
+.btn-cancel-form:hover { background: rgba(255,255,255,0.12); color: white; }
+
+/* ════════════════════════════════════════════
+   SECCIONES Y TÍTULOS (Compartidos)
+   ════════════════════════════════════════════ */
+.section-wrapper {
+  margin-top: 22px;
+}
+
+.section-title {
+  background: rgba(0, 170, 228, 0.15);
+  border-left: 3px solid #00aae4;
+  color: #00aae4;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  padding: 8px 14px;
+  text-transform: uppercase;
+  font-family: 'Inter', Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-body {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
+  background-color: rgba(255, 255, 255, 0.03);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: 'Inter', Arial, sans-serif;
+}
+
+.section-col {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.st-row-even { background: rgba(255, 255, 255, 0.01); }
+.st-row-odd  { background: rgba(0, 170, 228, 0.025); }
+.st-row:hover { background: rgba(0, 170, 228, 0.07) !important; }
+
+.st-btn-del {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 99, 132, 0.7);
+  font-size: 14px;
+  padding: 2px;
+  transition: color 0.2s, transform 0.2s;
+}
+.st-btn-del:hover {
+  color: #ff6384;
+  transform: scale(1.1);
+}
+
+.st-footer-actions {
+  padding: 8px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.st-btn-add {
+  background: rgba(0, 170, 228, 0.12);
+  border: 1px dashed rgba(0, 170, 228, 0.4);
+  border-radius: 6px;
+  color: #00aae4;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', Arial, sans-serif;
+  padding: 5px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.st-btn-add:hover {
+  background: rgba(0, 170, 228, 0.22);
+}
+

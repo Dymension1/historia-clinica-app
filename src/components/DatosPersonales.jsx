@@ -33,85 +33,12 @@ function DatosPersonales({ onChange, valores = {} }) {
     ];
 
     return (
-        <>
-            <style>{`
-                .pr-calendar {
-                    width: 100%;
-                }
-                .p-datepicker-title .p-datepicker-month {
-                    margin-right: 8px;
-                }
-                
-                /* PrimeReact Overrides para Datos Personales */
-                .pr-input {
-                    width: 100%;
-                    background: transparent;
-                    border: none;
-                    border-bottom: 1px solid rgba(0,170,228,0.35);
-                    border-radius: 0;
-                    color: rgba(255,255,255,0.9);
-                    padding: 4px 0;
-                    font-size: 13px;
-                    font-family: 'Inter', Arial, sans-serif;
-                    box-shadow: none !important;
-                }
-                .pr-input:focus, .pr-dropdown.p-focus {
-                    border-bottom-color: #00aae4;
-                }
-                .pr-input::placeholder {
-                    color: rgba(255,255,255,0.3);
-                }
-                
-                .pr-dropdown {
-                    background: transparent;
-                    border: none;
-                    border-bottom: 1px solid rgba(0,170,228,0.35);
-                    border-radius: 0;
-                    width: 100%;
-                    box-shadow: none !important;
-                }
-                .pr-dropdown .p-dropdown-label {
-                    padding: 4px 0;
-                    color: rgba(255,255,255,0.9);
-                    font-size: 13px;
-                    font-family: 'Inter', Arial, sans-serif;
-                }
-                .pr-dropdown .p-dropdown-trigger {
-                    width: 2rem;
-                    color: rgba(255,255,255,0.5);
-                }
-                
-                /* PrimeReact Dropdown Panel Styling */
-                .p-dropdown-panel {
-                    background: #0d2444;
-                    border: 1px solid rgba(0,170,228,0.3);
-                    border-radius: 8px;
-                    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-                    font-family: 'Inter', Arial, sans-serif;
-                    font-size: 13px;
-                }
-                .p-dropdown-panel .p-dropdown-items {
-                    padding: 4px 0;
-                    list-style-type: none;
-                }
-                .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
-                    padding: 10px 16px;
-                    color: rgba(255,255,255,0.85);
-                    transition: background 0.2s;
-                    cursor: pointer;
-                }
-                .p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight {
-                    background: rgba(0,170,228,0.3) !important;
-                    color: #00aae4;
-                    font-weight: 600;
-                }
-                .p-dropdown-panel .p-dropdown-items .p-dropdown-item:not(.p-highlight):hover {
-                    background: rgba(0,170,228,0.15);
-                }
-            `}</style>
-            
+        <div className="section-wrapper" style={{ marginTop: 0 }}>
+            <div className="section-title">
+                DATOS PERSONALES
+            </div>
             {/* ── FILA 1: Fecha | Nombre y Apellido ── */}
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px', marginBottom: '2px' }}>
+            <table className="form-layout-table">
                 <colgroup>
                     <col style={{ width: '200px' }} />
                     <col />
@@ -139,7 +66,7 @@ function DatosPersonales({ onChange, valores = {} }) {
             </table>
 
             {/* ── FILA 2: Doc. Identificación | Sexo | Fecha de Nacimiento | Edad ── */}
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px', marginBottom: '2px' }}>
+            <table className="form-layout-table">
                 <colgroup>
                     <col style={{ width: '40%' }} />
                     <col style={{ width: '15%' }} />
@@ -177,7 +104,7 @@ function DatosPersonales({ onChange, valores = {} }) {
             </table>
 
             {/* ── FILA 3: Teléfono | Dirección | Email ── */}
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px', marginBottom: '2px' }}>
+            <table className="form-layout-table">
                 <colgroup>
                     <col style={{ width: '220px' }} />
                     <col />
@@ -202,7 +129,7 @@ function DatosPersonales({ onChange, valores = {} }) {
             </table>
 
             {/* ── FILA 4: Obra Social | N° de Afiliado ── */}
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px', marginBottom: '2px' }}>
+            <table className="form-layout-table">
                 <colgroup>
                     <col />
                     <col style={{ width: '300px' }} />
@@ -222,7 +149,7 @@ function DatosPersonales({ onChange, valores = {} }) {
             </table>
 
             {/* ── FILA 5: Motivo de Consulta ── */}
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', fontSize: '12px' }}>
+            <table className="form-layout-table form-layout-table--last">
                 <colgroup>
                     <col />
                 </colgroup>
@@ -235,7 +162,7 @@ function DatosPersonales({ onChange, valores = {} }) {
                     </tr>
                 </tbody>
             </table>
-        </>
+        </div>
     );
 }
 
