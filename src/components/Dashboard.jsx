@@ -2,14 +2,14 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import './Dashboard.css';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import '../styles/Dashboard.css';
 
 function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
   const [registros, setRegistros] = useState([]);
   const [totales, setTotales] = useState({ total: 0, esteMes: 0 });
   const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState('');
-  const [eliminando, setEliminando] = useState(null);
   const [cargandoEdicion, setCargandoEdicion] = useState(null);
   const [errorCarga, setErrorCarga] = useState(null);
   const inicializado = useRef(false);
@@ -67,13 +67,25 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
     return () => clearTimeout(timer);
   }, [busqueda, cargarRegistros]);
 
+  const confirmarEliminacion = (id) => {
+    confirmDialog({
+      message: 'Esta acción no se puede deshacer. El registro será eliminado permanentemente.',
+      header: '¿Eliminar registro?',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, eliminar',
+      rejectLabel: 'Cancelar',
+      acceptClassName: 'p-confirm-dialog-accept',
+      rejectClassName: 'p-confirm-dialog-reject',
+      accept: () => eliminar(id),
+    });
+  };
+
   const eliminar = async (id) => {
     const { error } = await supabase.from('historias_clinicas').delete().eq('id', id);
     if (!error) {
       setRegistros((prev) => prev.filter((r) => r.id !== id));
       cargarTotales();
     }
-    setEliminando(null);
   };
 
   const fmtFecha = (str) => {
@@ -84,23 +96,8 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
 
   return (
     <>
-      {/* ── Modal confirmación de eliminación ── */}
-      {eliminando && (
-        <div className="db-overlay">
-          <div className="db-modal">
-            <div className="db-modal-icon">🗑️</div>
-            <div className="db-modal-title">¿Eliminar registro?</div>
-            <div className="db-modal-msg">Esta acción no se puede deshacer. El registro será eliminado permanentemente.</div>
-            <div className="db-modal-actions">
-              <button className="btn-cancel" onClick={() => setEliminando(null)}>Cancelar</button>
-              <button className="btn-confirmar-del" onClick={() => eliminar(eliminando)}>Sí, eliminar</button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      <ConfirmDialog draggable={false} resizable={false} />
       <div className="db-wrapper">
-
         {/* ── Topbar ── */}
         <div className="db-topbar">
           <div className="db-topbar-brand">
@@ -112,10 +109,8 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
             <button className="btn-ghost-red" onClick={onCerrarSesion}>Cerrar sesión</button>
           </div>
         </div>
-
         {/* ── Contenido ── */}
         <div className="db-content">
-
           {/* KPIs */}
           <div className="db-kpis">
             <div className="db-kpi">
@@ -131,7 +126,6 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
               <div className="db-kpi-value">{registros.length}</div>
             </div>
           </div>
-
           {/* Toolbar */}
           <div className="db-toolbar">
             <input
@@ -143,7 +137,6 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
             />
             <button className="btn-primary" onClick={() => { cargarTotales(); cargarRegistros(busqueda); }}>↺ Actualizar</button>
           </div>
-
           {/* Banner de error */}
           {errorCarga && (
             <div style={{
@@ -168,7 +161,6 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
               </button>
             </div>
           )}
-
           {/* Tabla */}
           <div className="db-table-wrap">
             {cargando ? (
@@ -213,13 +205,12 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
                     >
                       {cargandoEdicion === r.id ? '⏳' : '✏️'}
                     </button>
-                    <button className="btn-del" onClick={() => setEliminando(r.id)} title="Eliminar">🗑️</button>
+                    <button className="btn-del" onClick={() => confirmarEliminacion(r.id)} title="Eliminar">🗑️</button>
                   </div>
                 )} />
               </DataTable>
             )}
           </div>
-
         </div>
       </div>
     </>

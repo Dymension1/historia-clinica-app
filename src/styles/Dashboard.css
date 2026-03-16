@@ -15,10 +15,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 32px;
-  background: rgba(255,255,255,0.04);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
 }
+
 .db-topbar-brand {
   display: flex;
   align-items: center;
@@ -27,21 +28,26 @@
   font-size: 18px;
   font-weight: 700;
 }
-.db-topbar-brand span { color: #00aae4; }
+
+.db-topbar-brand span {
+  color: #00aae4;
+}
+
 .db-topbar-right {
   display: flex;
   align-items: center;
   gap: 16px;
 }
+
 .db-user-badge {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
   padding: 6px 14px;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 13px;
 }
 
@@ -57,10 +63,14 @@
   font-family: 'Inter', Arial, sans-serif;
   cursor: pointer;
   transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
-  box-shadow: 0 2px 12px rgba(0,170,228,0.4);
+  box-shadow: 0 2px 12px rgba(0, 170, 228, 0.4);
   white-space: nowrap;
 }
-.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
 
 .btn-ghost-red {
   padding: 6px 14px;
@@ -74,7 +84,11 @@
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
-.btn-ghost-red:hover { background: #cc2200; color: white; }
+
+.btn-ghost-red:hover {
+  background: #cc2200;
+  color: white;
+}
 
 /* ── Contenido principal ── */
 .db-content {
@@ -93,21 +107,24 @@
   gap: 16px;
   margin-bottom: 28px;
 }
+
 .db-kpi {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   padding: 20px 24px;
   color: white;
 }
+
 .db-kpi-label {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.5);
   margin-bottom: 8px;
 }
+
 .db-kpi-value {
   font-size: 32px;
   font-weight: 700;
@@ -123,12 +140,13 @@
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
+
 .db-search {
   flex: 1;
   min-width: 200px;
   padding: 10px 16px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.13);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 8px;
   color: white;
   font-size: 13px;
@@ -136,105 +154,125 @@
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.db-search::placeholder { color: rgba(255,255,255,0.3); }
+
+.db-search::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
 .db-search:focus {
   border-color: #00aae4;
-  box-shadow: 0 0 0 3px rgba(0,170,228,0.15);
+  box-shadow: 0 0 0 3px rgba(0, 170, 228, 0.15);
 }
 
 /* ── Tabla PrimeReact ── */
 .db-table-wrap {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 14px;
   overflow: hidden;
 }
+
 .db-primetable {
   font-family: 'Inter', Arial, sans-serif;
   font-size: 13px;
 }
-.db-primetable .p-datatable-thead > tr > th {
-  background: rgba(0,170,228,0.12);
-  color: rgba(255,255,255,0.6);
+
+.db-primetable .p-datatable-thead>tr>th {
+  background: rgba(0, 170, 228, 0.12);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   border-top: none;
 }
-.db-primetable .p-datatable-tbody > tr {
+
+.db-primetable .p-datatable-tbody>tr {
   background: transparent;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
   transition: background 0.2s;
 }
-.db-primetable .p-datatable-tbody > tr > td {
+
+.db-primetable .p-datatable-tbody>tr>td {
   padding: 13px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-.db-primetable .p-datatable-tbody > tr:hover {
-  background: rgba(255,255,255,0.04);
+
+.db-primetable .p-datatable-tbody>tr:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
+
 .db-primetable .p-paginator {
   background: transparent;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   padding: 12px;
 }
+
 .p-paginator .p-paginator-pages .p-paginator-page,
-.p-paginator .p-paginator-first, .p-paginator .p-paginator-prev,
-.p-paginator .p-paginator-next, .p-paginator .p-paginator-last {
-  background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.6);
+.p-paginator .p-paginator-first,
+.p-paginator .p-paginator-prev,
+.p-paginator .p-paginator-next,
+.p-paginator .p-paginator-last {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.6);
   border-radius: 6px;
   margin: 0 3px;
   border: none;
 }
+
 .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
-  background: rgba(0,170,228,0.15);
+  background: rgba(0, 170, 228, 0.15);
   color: #00aae4;
-  border: 1px solid rgba(0,170,228,0.4);
+  border: 1px solid rgba(0, 170, 228, 0.4);
 }
 
 /* ── PrimeReact Dropdown Overrides ── */
 .p-paginator .p-dropdown {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   color: white;
   min-height: 36px;
   align-items: center;
 }
+
 .p-paginator .p-dropdown .p-dropdown-label {
   padding: 0 12px;
   display: flex;
   align-items: center;
 }
+
 .p-dropdown-panel {
   background: #0d2444;
-  border: 1px solid rgba(0,170,228,0.3);
+  border: 1px solid rgba(0, 170, 228, 0.3);
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   font-family: 'Inter', Arial, sans-serif;
   font-size: 13px;
 }
+
 .p-dropdown-panel .p-dropdown-items {
   padding: 4px 0;
   list-style-type: none;
 }
+
 .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
   padding: 10px 16px;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
   transition: background 0.2s;
   cursor: pointer;
 }
+
 .p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight {
-  background: rgba(0,170,228,0.3) !important;
+  background: rgba(0, 170, 228, 0.3) !important;
   color: #00aae4;
   font-weight: 600;
 }
+
 .p-dropdown-panel .p-dropdown-items .p-dropdown-item:not(.p-highlight):hover {
-  background: rgba(0,170,228,0.15);
+  background: rgba(0, 170, 228, 0.15);
 }
 
 /* ── Celdas de la tabla ── */
@@ -242,17 +280,19 @@
   font-weight: 600;
   color: white;
 }
+
 .db-badge-dni {
   display: inline-block;
-  background: rgba(0,170,228,0.15);
+  background: rgba(0, 170, 228, 0.15);
   color: #00aae4;
   border-radius: 4px;
   padding: 2px 8px;
   font-size: 11px;
   font-weight: 600;
 }
+
 .db-motivo {
-  color: rgba(255,255,255,0.55);
+  color: rgba(255, 255, 255, 0.55);
   font-style: italic;
   max-width: 220px;
   display: block;
@@ -260,8 +300,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .db-diagnostico {
-  color: rgba(255,255,255,0.65);
+  color: rgba(255, 255, 255, 0.65);
   font-style: italic;
   min-width: 200px;
   max-width: 400px;
@@ -277,10 +318,11 @@
   align-items: center;
   gap: 8px;
 }
+
 .btn-edit {
   padding: 5px 12px;
-  background: rgba(0,170,228,0.15);
-  border: 1px solid rgba(0,170,228,0.4);
+  background: rgba(0, 170, 228, 0.15);
+  border: 1px solid rgba(0, 170, 228, 0.4);
   border-radius: 6px;
   color: #00aae4;
   font-size: 12px;
@@ -292,13 +334,21 @@
   align-items: center;
   gap: 4px;
 }
-.btn-edit:hover { background: #00aae4; color: white; }
-.btn-edit:disabled { opacity: 0.6; cursor: wait; }
+
+.btn-edit:hover {
+  background: #00aae4;
+  color: white;
+}
+
+.btn-edit:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
 
 .btn-del {
   padding: 5px 12px;
-  background: rgba(204,34,0,0.1);
-  border: 1px solid rgba(204,34,0,0.35);
+  background: rgba(204, 34, 0, 0.1);
+  border: 1px solid rgba(204, 34, 0, 0.35);
   border-radius: 6px;
   color: #ff6b55;
   font-size: 12px;
@@ -310,73 +360,117 @@
   align-items: center;
   justify-content: center;
 }
-.btn-del:hover { background: #cc2200; color: white; border-color: #cc2200; }
+
+.btn-del:hover {
+  background: #cc2200;
+  color: white;
+  border-color: #cc2200;
+}
 
 /* ── Estado vacío / cargando ── */
 .db-empty {
   text-align: center;
   padding: 60px 20px;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255, 255, 255, 0.35);
 }
-.db-empty-icon { font-size: 48px; margin-bottom: 12px; }
-.db-empty-msg  { font-size: 14px; }
 
-/* ── Modal de confirmación ── */
-.db-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+.db-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.db-empty-msg {
+  font-size: 14px;
+}
+
+/* ── PrimeReact ConfirmDialog Overrides ── */
+.p-dialog-mask {
+  background: rgba(0, 0, 0, 0.65) !important;
   backdrop-filter: blur(4px);
-  animation: fadeOverlay 0.2s ease;
 }
-@keyframes fadeOverlay { from { opacity: 0; } to { opacity: 1; } }
-.db-modal {
-  background: #0d2444;
-  border: 1px solid rgba(255,255,255,0.12);
+
+.p-dialog.p-confirm-dialog {
+  background: rgba(13, 36, 68, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 16px;
-  padding: 32px 36px;
-  max-width: 380px;
-  width: 90%;
-  text-align: center;
-  color: white;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
-  animation: slideModal 0.25s ease;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  padding: 0;
+  backdrop-filter: blur(12px);
 }
-@keyframes slideModal { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-.db-modal-icon  { font-size: 40px; margin-bottom: 12px; }
-.db-modal-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
-.db-modal-msg   { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 24px; }
-.db-modal-actions { display: flex; gap: 12px; justify-content: center; }
 
-.btn-cancel {
-  padding: 9px 22px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 8px;
+.p-dialog .p-dialog-header {
+  background: transparent;
   color: white;
+  padding: 24px 24px 12px 24px;
+  border-bottom: none;
+}
+
+.p-dialog .p-dialog-header .p-dialog-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.p-dialog .p-dialog-header .p-dialog-header-icon {
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.2s;
+}
+
+.p-dialog .p-dialog-header .p-dialog-header-icon:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.p-dialog .p-dialog-content {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.65);
+  padding: 0 24px 24px 24px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.p-confirm-dialog-icon {
+  font-size: 24px;
+  margin-right: 16px;
+  color: #ff6b55;
+}
+
+.p-dialog .p-dialog-footer {
+  background: transparent;
+  padding: 16px 24px 24px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Botones dentro del diálogo */
+.p-dialog .p-dialog-footer button {
+  font-family: 'Inter', Arial, sans-serif;
   font-size: 13px;
   font-weight: 600;
-  font-family: 'Inter', Arial, sans-serif;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-cancel:hover { background: rgba(255,255,255,0.14); }
-
-.btn-confirmar-del {
-  padding: 9px 22px;
-  background: linear-gradient(135deg, #cc2200, #990000);
-  border: none;
+  padding: 10px 20px;
   border-radius: 8px;
-  color: white;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: 'Inter', Arial, sans-serif;
-  cursor: pointer;
-  box-shadow: 0 2px 10px rgba(204,34,0,0.4);
-  transition: opacity 0.2s;
+  transition: all 0.2s;
 }
-.btn-confirmar-del:hover { opacity: 0.88; }
+
+.p-dialog .p-dialog-footer .p-button-secondary,
+.p-dialog .p-dialog-footer .p-confirm-dialog-reject {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+}
+
+.p-dialog .p-dialog-footer .p-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+
+.p-dialog .p-dialog-footer .p-confirm-dialog-accept {
+  background: linear-gradient(135deg, #ff0000, #ff0000) !important;
+  border: none !important;
+  box-shadow: 0 2px 10px rgba(204, 34, 0, 0.3) !important;
+}
+
+.p-dialog .p-dialog-footer .p-confirm-dialog-accept:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}

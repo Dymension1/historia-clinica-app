@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
+import '../styles/Login.css';
 
 function Login({ onLogin }) {
     const [usuario, setUsuario] = useState('');
@@ -29,309 +30,85 @@ function Login({ onLogin }) {
     };
 
     return (
-        <>
-            <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        <div className="login-wrapper">
+            <div className="login-card">
 
-        .login-wrapper {
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: linear-gradient(135deg, #0a1628 0%, #0d2444 40%, #0a3060 70%, #0056b3 100%);
-          font-family: 'Inter', Arial, sans-serif;
-          position: relative;
-          overflow: hidden;
-        }
-
-        /* Círculos decorativos de fondo */
-        .login-wrapper::before {
-          content: '';
-          position: absolute;
-          width: 500px;
-          height: 500px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(0,170,228,0.12) 0%, transparent 70%);
-          top: -100px;
-          right: -100px;
-          pointer-events: none;
-        }
-        .login-wrapper::after {
-          content: '';
-          position: absolute;
-          width: 400px;
-          height: 400px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(0,86,179,0.18) 0%, transparent 70%);
-          bottom: -80px;
-          left: -80px;
-          pointer-events: none;
-        }
-
-        .login-card {
-          background: rgba(255,255,255,0.06);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 20px;
-          padding: 48px 44px;
-          width: 100%;
-          max-width: 420px;
-          box-shadow: 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
-          position: relative;
-          z-index: 1;
-        }
-
-        .login-logo {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          margin-bottom: 10px;
-        }
-
-        .login-logo-icon {
-          width: 48px;
-          height: 48px;
-          background: linear-gradient(135deg, #00aae4, #0056b3);
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 24px;
-          box-shadow: 0 4px 16px rgba(0,170,228,0.4);
-        }
-
-        .login-logo-text {
-          font-size: 22px;
-          font-weight: 700;
-          color: white;
-          letter-spacing: 0.5px;
-        }
-
-        .login-logo-text span {
-          color: #00aae4;
-        }
-
-        .login-subtitle {
-          text-align: center;
-          color: rgba(255,255,255,0.5);
-          font-size: 13px;
-          margin-bottom: 36px;
-          letter-spacing: 0.3px;
-        }
-
-        .login-label {
-          display: block;
-          font-size: 11px;
-          font-weight: 600;
-          color: rgba(255,255,255,0.6);
-          text-transform: uppercase;
-          letter-spacing: 0.8px;
-          margin-bottom: 8px;
-        }
-
-        .login-input-wrapper {
-          margin-bottom: 20px;
-        }
-
-        .login-input-field {
-          position: relative;
-        }
-
-        .login-input {
-          width: 100%;
-          padding: 13px 16px;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: 10px;
-          color: white;
-          font-size: 14px;
-          font-family: 'Inter', Arial, sans-serif;
-          outline: none;
-          box-sizing: border-box;
-          transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-        }
-
-        .login-input::placeholder {
-          color: rgba(255,255,255,0.25);
-        }
-
-        .login-input:focus {
-          border-color: #00aae4;
-          background: rgba(0,170,228,0.08);
-          box-shadow: 0 0 0 3px rgba(0,170,228,0.15);
-        }
-
-        .login-input-icon {
-          position: absolute;
-          right: 14px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: rgba(255,255,255,0.35);
-          font-size: 16px;
-          cursor: pointer;
-          user-select: none;
-          transition: color 0.2s;
-        }
-        .login-input-icon:hover {
-          color: rgba(255,255,255,0.7);
-        }
-
-        .login-error {
-          background: rgba(220,53,69,0.15);
-          border: 1px solid rgba(220,53,69,0.4);
-          border-radius: 8px;
-          padding: 10px 14px;
-          color: #ff8a95;
-          font-size: 13px;
-          margin-bottom: 20px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .login-btn {
-          width: 100%;
-          padding: 14px;
-          background: linear-gradient(135deg, #00aae4, #0056b3);
-          border: none;
-          border-radius: 10px;
-          color: white;
-          font-size: 15px;
-          font-weight: 600;
-          font-family: 'Inter', Arial, sans-serif;
-          cursor: pointer;
-          transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
-          box-shadow: 0 4px 20px rgba(0,170,228,0.4);
-          letter-spacing: 0.3px;
-          margin-top: 4px;
-        }
-
-        .login-btn:hover:not(:disabled) {
-          opacity: 0.92;
-          box-shadow: 0 6px 24px rgba(0,170,228,0.55);
-          transform: translateY(-1px);
-        }
-
-        .login-btn:active:not(:disabled) {
-          transform: translateY(0);
-        }
-
-        .login-btn:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
-
-        .login-footer {
-          text-align: center;
-          margin-top: 28px;
-          color: rgba(255,255,255,0.3);
-          font-size: 11px;
-          letter-spacing: 0.3px;
-        }
-
-        .spinner {
-          display: inline-block;
-          width: 14px;
-          height: 14px;
-          border: 2px solid rgba(255,255,255,0.4);
-          border-top-color: white;
-          border-radius: 50%;
-          animation: spin 0.7s linear infinite;
-          margin-right: 8px;
-          vertical-align: middle;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
-        @media print {
-          .login-wrapper { display: none; }
-        }
-      `}</style>
-
-            <div className="login-wrapper">
-                <div className="login-card">
-
-                    {/* Logo / Marca */}
-                    <div className="login-logo">
-                        <div className="login-logo-icon">🦷</div>
-                        <div className="login-logo-text">Historia<span>Clínica</span></div>
-                    </div>
-                    <p className="login-subtitle">Sistema de gestión odontológica</p>
-
-                    {/* Formulario */}
-                    <form onSubmit={manejarSubmit} noValidate>
-
-                        <div className="login-input-wrapper">
-                            <label className="login-label" htmlFor="input-usuario">Usuario</label>
-                            <input
-                                id="input-usuario"
-                                type="text"
-                                className="login-input"
-                                placeholder="Ingrese su usuario"
-                                value={usuario}
-                                onChange={(e) => setUsuario(e.target.value)}
-                                autoComplete="username"
-                                autoFocus
-                                required
-                            />
-                        </div>
-
-                        <div className="login-input-wrapper">
-                            <label className="login-label" htmlFor="input-contrasena">Contraseña</label>
-                            <div className="login-input-field">
-                                <input
-                                    id="input-contrasena"
-                                    type={mostrarContrasena ? 'text' : 'password'}
-                                    className="login-input"
-                                    placeholder="Ingrese su contraseña"
-                                    value={contrasena}
-                                    onChange={(e) => setContrasena(e.target.value)}
-                                    autoComplete="current-password"
-                                    required
-                                    style={{ paddingRight: '44px' }}
-                                />
-                                <span
-                                    className="login-input-icon"
-                                    onClick={() => setMostrarContrasena(!mostrarContrasena)}
-                                    title={mostrarContrasena ? 'Ocultar' : 'Mostrar'}
-                                >
-                                    {mostrarContrasena ? '🙈' : '👁️'}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Mensaje de error */}
-                        {error && (
-                            <div className="login-error">
-                                <span>⚠️</span> {error}
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            className="login-btn"
-                            disabled={cargando || !usuario || !contrasena}
-                        >
-                            {cargando ? (
-                                <><span className="spinner"></span>Ingresando...</>
-                            ) : (
-                                'Ingresar al sistema'
-                            )}
-                        </button>
-
-                    </form>
-
-                    <div className="login-footer">
-                        © {new Date().getFullYear()} Historia Clínica · Acceso restringido
-                    </div>
-
+                {/* Logo / Marca */}
+                <div className="login-logo">
+                    <div className="login-logo-icon">🦷</div>
+                    <div className="login-logo-text">Historia<span>Clínica</span></div>
                 </div>
+                <p className="login-subtitle">Sistema de gestión odontológica</p>
+
+                {/* Formulario */}
+                <form onSubmit={manejarSubmit} noValidate>
+
+                    <div className="login-input-wrapper">
+                        <label className="login-label" htmlFor="input-usuario">Usuario</label>
+                        <input
+                            id="input-usuario"
+                            type="text"
+                            className="login-input"
+                            placeholder="Ingrese su usuario"
+                            value={usuario}
+                            onChange={(e) => setUsuario(e.target.value)}
+                            autoComplete="username"
+                            autoFocus
+                            required
+                        />
+                    </div>
+
+                    <div className="login-input-wrapper">
+                        <label className="login-label" htmlFor="input-contrasena">Contraseña</label>
+                        <div className="login-input-field">
+                            <input
+                                id="input-contrasena"
+                                type={mostrarContrasena ? 'text' : 'password'}
+                                className="login-input"
+                                placeholder="Ingrese su contraseña"
+                                value={contrasena}
+                                onChange={(e) => setContrasena(e.target.value)}
+                                autoComplete="current-password"
+                                required
+                                style={{ paddingRight: '44px' }}
+                            />
+                            <span
+                                className="login-input-icon"
+                                onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                                title={mostrarContrasena ? 'Ocultar' : 'Mostrar'}
+                            >
+                                {mostrarContrasena ? '🙈' : '👁️'}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Mensaje de error */}
+                    {error && (
+                        <div className="login-error">
+                            <span>⚠️</span> {error}
+                        </div>
+                    )}
+
+                    <button
+                        type="submit"
+                        className="login-btn"
+                        disabled={cargando || !usuario || !contrasena}
+                    >
+                        {cargando ? (
+                            <><span className="spinner"></span>Ingresando...</>
+                        ) : (
+                            'Ingresar al sistema'
+                        )}
+                    </button>
+
+                </form>
+
+                <div className="login-footer">
+                    © {new Date().getFullYear()} Historia Clínica · Acceso restringido
+                </div>
+
             </div>
-        </>
+        </div>
     );
 }
 
