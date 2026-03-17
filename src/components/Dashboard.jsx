@@ -3,6 +3,9 @@ import { supabase } from '../supabaseClient';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { Skeleton } from 'primereact/skeleton';
+import { Toast } from 'primereact/toast';
+import Topbar from './Topbar';
 import '../styles/Dashboard.css';
 
 function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
@@ -13,6 +16,7 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
   const [cargandoEdicion, setCargandoEdicion] = useState(null);
   const [errorCarga, setErrorCarga] = useState(null);
   const inicializado = useRef(false);
+  const toast = useRef(null);
 
   // ── Conteos independientes para los KPIs ──
   const cargarTotales = useCallback(async () => {
@@ -76,16 +80,22 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
       rejectLabel: 'Cancelar',
       acceptClassName: 'p-confirm-dialog-accept',
       rejectClassName: 'p-confirm-dialog-reject',
-      accept: () => eliminar(id),
+      accept: async () => {
+        const { error } = await supabase.from('historias_clinicas').delete().eq('id', id);
+        if (error) {
+          toast.current.show({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el registro', life: 3000 });
+        } else {
+          toast.current.show({ severity: 'success', summary: 'Eliminado', detail: 'Registro eliminado correctamente', life: 3000 });
+          // Actualizar la lista de registros y los totales
+          setRegistros((prev) => prev.filter((r) => r.id !== id));
+          cargarTotales();
+          // Si la búsqueda está activa, recargar los registros con la búsqueda actual
+          if (busqueda) {
+            cargarRegistros(busqueda);
+          }
+        }
+      },
     });
-  };
-
-  const eliminar = async (id) => {
-    const { error } = await supabase.from('historias_clinicas').delete().eq('id', id);
-    if (!error) {
-      setRegistros((prev) => prev.filter((r) => r.id !== id));
-      cargarTotales();
-    }
   };
 
   const fmtFecha = (str) => {
@@ -95,35 +105,42 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
   };
 
   return (
-    <>
-      <ConfirmDialog draggable={false} resizable={false} />
-      <div className="db-wrapper">
-        {/* ── Topbar ── */}
-        <div className="db-topbar">
-          <div className="db-topbar-brand">
-            🦷 Historia<span>Clínica</span>
-          </div>
-          <div className="db-topbar-right">
-            <div className="db-user-badge">👤 {usuario}</div>
-            <button className="btn-primary" onClick={onNueva}>+ Nueva historia</button>
-            <button className="btn-ghost-red" onClick={onCerrarSesion}>Cerrar sesión</button>
-          </div>
-        </div>
+    <div className="db-wrapper">
+      <Toast ref={toast} />
+      <ConfirmDialog />
+      
+      <Topbar usuario={usuario}>
+        <button className="btn-primary" onClick={onNueva}>
+          <i className="pi pi-plus"></i> Nueva historia
+        </button>
+        <button className="btn-ghost-red" onClick={onCerrarSesion}>
+          Cerrar sesión
+        </button>
+      </Topbar>
         {/* ── Contenido ── */}
         <div className="db-content">
           {/* KPIs */}
           <div className="db-kpis">
             <div className="db-kpi">
-              <div className="db-kpi-label">Total de registros</div>
-              <div className="db-kpi-value">{totales.total}</div>
+              <div className="db-kpi-icon">📋</div>
+              <div className="db-kpi-data">
+                <div className="db-kpi-label">Total de registros</div>
+                <div className="db-kpi-value">{totales.total}</div>
+              </div>
             </div>
             <div className="db-kpi">
-              <div className="db-kpi-label">Este mes</div>
-              <div className="db-kpi-value">{totales.esteMes}</div>
+              <div className="db-kpi-icon">📅</div>
+              <div className="db-kpi-data">
+                <div className="db-kpi-label">Este mes</div>
+                <div className="db-kpi-value">{totales.esteMes}</div>
+              </div>
             </div>
             <div className="db-kpi">
-              <div className="db-kpi-label">{busqueda ? 'Resultados encontrados' : 'Mostrando'}</div>
-              <div className="db-kpi-value">{registros.length}</div>
+              <div className="db-kpi-icon">🔍</div>
+              <div className="db-kpi-data">
+                <div className="db-kpi-label">{busqueda ? 'Resultados encontrados' : 'Historias visibles'}</div>
+                <div className="db-kpi-value">{registros.length}</div>
+              </div>
             </div>
           </div>
           {/* Toolbar */}
@@ -139,23 +156,11 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
           </div>
           {/* Banner de error */}
           {errorCarga && (
-            <div style={{
-              background: 'rgba(204,34,0,0.12)',
-              border: '1px solid rgba(204,34,0,0.35)',
-              borderRadius: '10px',
-              padding: '14px 20px',
-              marginBottom: '16px',
-              color: '#ff8a95',
-              fontSize: '13px',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-            }}>
-              ❌ {errorCarga}
+            <div className="db-error">
+              <span>✕</span> {errorCarga}
               <button
+                className="btn-retry"
                 onClick={() => { cargarTotales(); cargarRegistros(busqueda); }}
-                style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', color: 'white', padding: '4px 12px', cursor: 'pointer', fontSize: '12px' }}
               >
                 Reintentar
               </button>
@@ -164,10 +169,15 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
           {/* Tabla */}
           <div className="db-table-wrap">
             {cargando ? (
-              <div className="db-empty">
-                <div className="db-empty-icon">⏳</div>
-                <div className="db-empty-msg">Cargando registros...</div>
-              </div>
+              <DataTable value={[1, 2, 3, 4, 5]} className="db-primetable">
+                <Column header="Fecha" body={<Skeleton width="80%" />} />
+                <Column header="Paciente" body={<Skeleton width="90%" />} />
+                <Column header="DNI" body={<Skeleton width="70%" />} />
+                <Column header="Motivo de consulta" body={<Skeleton width="95%" />} />
+                <Column header="Diagnóstico" body={<Skeleton width="100%" />} />
+                <Column header="Registrado" body={<Skeleton width="85%" />} />
+                <Column header="Acciones" body={<Skeleton width="60px" shape="circle" />} />
+              </DataTable>
             ) : registros.length === 0 && !errorCarga ? (
               <div className="db-empty">
                 <div className="db-empty-icon">{busqueda ? '🔍' : '📋'}</div>
@@ -210,10 +220,9 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
                 )} />
               </DataTable>
             )}
-          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -94,35 +94,26 @@ function formToRow(datos, userId) {
     encias2: datos.encias2 || null,
     tejidos: datos.tejidos || null,
     diagnostico: datos.diagnostico || null,
-    // seguimiento se guarda en tabla separada
   };
 }
 
-/**
- * Hook que encapsula toda la lógica de persistencia de historias clínicas.
- * @param {Object} options
- * @param {Function} options.onGuardadoOk - callback ejecutado 1.8 s después de guardar exitosamente
- */
 export function useHistoriaClinica({ onGuardadoOk } = {}) {
   const [datos, setDatos] = useState({});
   const [editandoId, setEditandoId] = useState(null);
   const [guardando, setGuardando] = useState(false);
-  const [estadoGuardado, setEstadoGuardado] = useState(null); // 'ok' | 'error' | null
+  const [estadoGuardado, setEstadoGuardado] = useState(null);
 
-  // Maneja cambios de cualquier campo del formulario
   const manejarCambio = (e) => {
     const { name, type, checked, value } = e.target;
     setDatos((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
-  // Prepara el estado para una nueva historia
   const abrirNueva = () => {
     setDatos({});
     setEditandoId(null);
     setEstadoGuardado(null);
   };
 
-  // Carga una historia existente (historia + seguimiento)
   const abrirEditar = async (id) => {
     const { data, error } = await supabase
       .from('historias_clinicas')
@@ -155,7 +146,6 @@ export function useHistoriaClinica({ onGuardadoOk } = {}) {
     }
   };
 
-  // Guarda la historia + seguimiento (INSERT o UPDATE según modo)
   const guardarHistoria = async (sessionId) => {
     setGuardando(true);
     setEstadoGuardado(null);
@@ -167,13 +157,11 @@ export function useHistoriaClinica({ onGuardadoOk } = {}) {
     let historiaId = editandoId;
 
     if (editandoId) {
-      // Modo edición → UPDATE
       ({ error } = await supabase
         .from('historias_clinicas')
         .update(registro)
         .eq('id', editandoId));
     } else {
-      // Modo nuevo → INSERT, recuperamos el ID para ligar el seguimiento
       const { data: inserted, error: insertError } = await supabase
         .from('historias_clinicas')
         .insert(registro)
@@ -183,8 +171,6 @@ export function useHistoriaClinica({ onGuardadoOk } = {}) {
       historiaId = inserted?.id ?? null;
     }
 
-    // ── Guardar seguimiento: borrar existentes y re-insertar ──
-    // (estrategia "delete + insert" para manejar alta/baja/modificación en un solo paso)
     if (!error && historiaId) {
       const filasValidas = seguimientoFilas.filter(
         (f) => f.fecha || f.tratamiento || f.diente || f.caras || f.observaciones || f.presupuesto || f.entrega
@@ -201,14 +187,12 @@ export function useHistoriaClinica({ onGuardadoOk } = {}) {
         entrega:       parseFloat((f.entrega     || '').replace(/\./g, '').replace(',', '.')) || 0,
       });
 
-      // 1. Eliminar TODOS los registros previos de esta historia
       const { error: deleteError } = await supabase
         .from('seguimiento_tratamiento')
         .delete()
         .eq('historia_id', historiaId);
       if (deleteError) error = deleteError;
 
-      // 2. Re-insertar solo las filas válidas (sin pasar id → GENERATED ALWAYS)
       if (!error && filasValidas.length > 0) {
         const { error: insertError } = await supabase
           .from('seguimiento_tratamiento')
@@ -228,14 +212,7 @@ export function useHistoriaClinica({ onGuardadoOk } = {}) {
   };
 
   return {
-    datos,
-    editandoId,
-    guardando,
-    estadoGuardado,
-    manejarCambio,
-    abrirNueva,
-    abrirEditar,
-    guardarHistoria,
-    setEstadoGuardado,
+    datos, editandoId, guardando, estadoGuardado,
+    manejarCambio, abrirNueva, abrirEditar, guardarHistoria, setEstadoGuardado,
   };
 }
