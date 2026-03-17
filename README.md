@@ -1,6 +1,16 @@
 # 🦷 Historia Clínica App
 
-Aplicación web para la gestión de historias clínicas odontológicas. Permite registrar, editar y consultar pacientes con toda su información médica, antecedentes, diagnóstico y seguimiento de tratamientos.
+Aplicación web profesional para la gestión de historias clínicas odontológicas. Diseñada con una interfaz moderna, responsiva y optimizada para el flujo de trabajo clínico. Permite registrar, editar y consultar pacientes con toda su información médica, antecedentes, diagnóstico y seguimiento de tratamientos.
+
+---
+
+## 🎨 Diseño y UI
+
+La aplicación cuenta con una interfaz de usuario **Premium** centrada en la experiencia del usuario (UX):
+- **Glassmorphism**: Uso de transparencias y desenfoques (backdrop-filter) para un aspecto moderno.
+- **Micro-animaciones**: Transiciones suaves y feedback visual en interacciones.
+- **CSS Grid Layout**: Estructura de formularios robusta y adaptable.
+- **Modo Oscuro**: Paleta de colores optimizada para reducir la fatiga visual en entornos clínicos.
 
 ---
 
@@ -8,11 +18,12 @@ Aplicación web para la gestión de historias clínicas odontológicas. Permite 
 
 | Tecnología | Versión | Uso |
 |---|---|---|
-| [React](https://react.dev/) | 19 | Framework de UI |
-| [Vite](https://vitejs.dev/) | 7 | Bundler / Dev server |
-| [Supabase](https://supabase.com/) | 2 | Base de datos (PostgreSQL) + Auth |
-| [PrimeReact](https://primereact.org/) | 10 | Componentes de UI (Calendar, Dropdown, etc.) |
-| [date-fns](https://date-fns.org/) | 4 | Formateo de fechas |
+| [React](https://react.dev/) | 19 | Biblioteca principal de UI |
+| [Vite](https://vitejs.dev/) | 7 | Servidor de desarrollo y construcción |
+| [Supabase](https://supabase.com/) | 2 | Backend-as-a-Service (PostgreSQL + Auth + RLS) |
+| [PrimeReact](https://primereact.org/) | 10 | Suite de componentes premium |
+| [date-fns](https://date-fns.org/) | 4 | Manipulación y formateo de fechas |
+| [CSS Vanilla](https://developer.mozilla.org/en-US/docs/Web/CSS) | - | Estilizado personalizado de alta fidelidad |
 
 ---
 
@@ -21,187 +32,75 @@ Aplicación web para la gestión de historias clínicas odontológicas. Permite 
 ```
 historia-clinica-app/
 ├── src/
-│   ├── components/
-│   │   ├── Login.jsx                  # Pantalla de inicio de sesión
-│   │   ├── Dashboard.jsx              # Listado de historias clínicas
-│   │   ├── DatosPersonales.jsx        # Sección: datos del paciente
-│   │   ├── AntecedentesMedicos.jsx    # Sección: antecedentes médicos
-│   │   ├── HistoriaOdontologica.jsx   # Sección: historia odontológica
-│   │   ├── Diagnostico.jsx            # Sección: diagnóstico
-│   │   ├── SeguimientoTratamiento.jsx # Sección: tabla de tratamientos
-│   │   └── theme.js                   # Estilos/tokens compartidos
-│   ├── App.jsx                        # Lógica principal y routing
-│   ├── supabaseClient.js              # Inicialización del cliente Supabase
-│   ├── main.jsx                       # Punto de entrada React
-│   └── index.css                      # Estilos globales
-├── .env.local                         # Variables de entorno (no commitear)
-├── index.html
-├── vite.config.js
+│   ├── components/            # Componentes de la interfaz
+│   │   ├── Topbar.jsx         # Barra de navegación superior
+│   │   ├── Login.jsx          # Acceso al sistema
+│   │   ├── Dashboard.jsx      # Gestión y listado de pacientes
+│   │   ├── DatosPersonales.jsx # Refactorizado con CSS Grid
+│   │   ├── SeguimientoTratamiento.jsx # Tabla dinámica de tratamientos
+│   │   └── ...
+│   ├── hooks/                 # Lógica reutilizable
+│   │   ├── useAuth.js         # Gestión de sesiones con Supabase
+│   │   └── useHistoriaClinica.js # Operaciones CRUD sincronizadas
+│   ├── styles/                # CSS Modular por componente
+│   │   ├── form.css           # Estilos base del sistema de formularios
+│   │   └── ...
+│   ├── supabaseClient.js      # Configuración de conexión
+│   └── main.jsx                       # Inicialización de la App
+├── .env.local                         # Variables de entorno
 └── package.json
 ```
 
 ---
 
-## 🗄️ Base de datos — Supabase
+## 🗄️ Arquitectura y Base de Datos
 
-### Tabla principal: `historias_clinicas`
-
-```sql
-CREATE TABLE historias_clinicas (
-  id                       UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  created_at               TIMESTAMPTZ DEFAULT now(),
-  updated_at               TIMESTAMPTZ DEFAULT now(),
-  user_id                  UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  fecha                    DATE,
-  nombre                   TEXT,
-  dni                      TEXT,
-  sexo                     TEXT,
-  fecha_nacimiento         DATE,
-  edad                     INTEGER,
-  telefono                 TEXT,
-  direccion                TEXT,
-  email_paciente           TEXT,
-  obra_social              TEXT,
-  afiliado                 TEXT,
-  motivo_consulta          TEXT,
-  cond_cardiopatias        BOOLEAN DEFAULT false,
-  cond_hipertension        BOOLEAN DEFAULT false,
-  cond_diabetes            BOOLEAN DEFAULT false,
-  cond_asma                BOOLEAN DEFAULT false,
-  cond_anemia              BOOLEAN DEFAULT false,
-  cond_tiroides            BOOLEAN DEFAULT false,
-  cond_epilepsia           BOOLEAN DEFAULT false,
-  cond_coagulacion         BOOLEAN DEFAULT false,
-  cond_embarazo            BOOLEAN DEFAULT false,
-  cond_autoinmunes         BOOLEAN DEFAULT false,
-  cond_autoinmunes_detalle TEXT,
-  cond_otras               BOOLEAN DEFAULT false,
-  cond_otras_detalle       TEXT,
-  fuma                     BOOLEAN DEFAULT false,
-  fuma_detalle             TEXT,
-  alcohol_rta              TEXT,
-  hilo_frec                TEXT,
-  enjuague_rta             TEXT,
-  encias_rta               TEXT,
-  sensibilidad_rta         TEXT,
-  bruxismo_rta             TEXT,
-  reacciones               BOOLEAN DEFAULT false,
-  reacciones_detalle       TEXT,
-  cepilla                  TEXT,
-  hilo_dental2             TEXT,
-  enjuague2                TEXT,
-  encias2                  TEXT,
-  tejidos                  TEXT,
-  diagnostico              TEXT
-);
-```
-
-### Tabla de seguimiento: `seguimiento_tratamiento`
-
-Los tratamientos de cada historia se guardan en una tabla separada vinculada por `historia_id`.
-
-```sql
-CREATE TABLE seguimiento_tratamiento (
-  id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  historia_id    UUID NOT NULL REFERENCES historias_clinicas(id) ON DELETE CASCADE,
-  fecha          DATE,
-  tratamiento    TEXT,
-  diente         TEXT,
-  caras          TEXT,
-  observaciones  TEXT,
-  presupuesto    NUMERIC(12, 2) DEFAULT 0,
-  entrega        NUMERIC(12, 2) DEFAULT 0,
-  created_at     TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX idx_seguimiento_historia ON seguimiento_tratamiento(historia_id);
-```
-
-> ⚠️ El campo **saldo** se calcula en el frontend (`presupuesto - entrega`) y no se persiste en la base de datos.
-
-### RLS (Row Level Security)
-
-```sql
--- historias_clinicas
-ALTER TABLE historias_clinicas ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Acceso autenticado" ON historias_clinicas
-  FOR ALL USING (auth.role() = 'authenticated');
-
--- seguimiento_tratamiento
-ALTER TABLE seguimiento_tratamiento ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Acceso autenticado" ON seguimiento_tratamiento
-  FOR ALL USING (auth.role() = 'authenticated');
-```
+### Multi-tenancy & Seguridad (RLS)
+La aplicación utiliza **Row Level Security (RLS)** de Supabase para garantizar el aislamiento de los datos:
+- **Aislamiento**: Los datos están filtrados a nivel de base de datos mediante el `user_id` del profesional autenticado.
+- **Políticas**: Control de acceso granular para que cada médico solo vea sus historias clínicas.
 
 ---
 
 ## ⚙️ Configuración local
 
-### 1. Clonar el repositorio
-
+### 1. Clonar e Instalar
 ```bash
 git clone https://github.com/Dymension1/historia-clinica-app.git
 cd historia-clinica-app
-```
-
-### 2. Instalar dependencias
-
-```bash
 npm install
 ```
 
-### 3. Configurar variables de entorno
-
-Crear el archivo `.env.local` en la raíz del proyecto:
-
+### 2. Variables de entorno (.env.local)
 ```env
-VITE_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key-here
+VITE_SUPABASE_URL=tu_url_de_supabase
+VITE_SUPABASE_ANON_KEY=tu_clave_anon_de_supabase
 ```
 
-> Las credenciales se obtienen desde **Supabase → Project Settings → API**.
-
-### 4. Ejecutar en desarrollo
-
+### 3. Ejecución
 ```bash
 npm run dev
 ```
 
-La app estará disponible en `http://localhost:5173`
+---
 
-### 5. Build para producción
+## ✨ Funcionalidades Clave
 
-```bash
-npm run build
-```
+- 🔐 **Autenticación Robusta**: Flujo de login persistente con Supabase.
+- 🔍 **Búsqueda Avanzada**: Filtrado inteligente de pacientes en tiempo real.
+- 🛠️ **Formulario Dinámico**: Validación automática, cálculos de edad y saldos.
+- 🖨️ **Modo Impresión**: Estilos CSS específicos (Media Print) para generar informes profesionales.
+- 🔄 **Sincronización en Tiempo Real**: Los cambios se sincronizan automáticamente con la nube.
 
 ---
 
-## ✨ Funcionalidades
+## 🌿 Gestión de Versiones
 
-- 🔐 **Autenticación** con Supabase Auth (email/contraseña)
-- 📋 **Dashboard** con listado, búsqueda y eliminación de historias clínicas
-- 📝 **Formulario completo** dividido en secciones:
-  - Datos personales del paciente
-  - Antecedentes médicos (condiciones, hábitos, alergias)
-  - Historia odontológica
-  - Diagnóstico
-  - Seguimiento de tratamientos (tabla dinámica con filas editables)
-- 💰 **Cálculo automático de saldo** (presupuesto − entrega) por tratamiento
-- 🖨️ **Impresión / exportación a PDF** optimizada con estilos específicos para impresión
-- 💾 **Guardado en Supabase** con soporte para crear y editar historias
-
----
-
-## 🌿 Ramas
-
-| Rama | Descripción |
-|---|---|
-| `main` | Producción estable |
-| `develop` | Desarrollo activo |
+- `main`: Versión estable para uso en producción.
+- `develop`: Rama de integración para nuevas características y mejoras de UI.
 
 ---
 
 ## 📄 Licencia
 
-Uso interno — todos los derechos reservados.
+Uso privado — Todos los derechos reservados.
