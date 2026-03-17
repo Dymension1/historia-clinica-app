@@ -15,10 +15,7 @@ function HistoriaOdontologica({ onChange, valores = {} }) {
 
     return (
         <div className="section-wrapper">
-            {/* Título */}
             <div className="section-title">Historia Odontológica</div>
-
-            {/* Preguntas */}
             <div className="section-body" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {preguntas.map(({ name, label }) => (
                     <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

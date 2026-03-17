@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
@@ -17,33 +17,11 @@ addLocale('es', {
     clear: 'Limpiar'
 });
 
-const TRATAMIENTOS = [
-    '',
-    'Consulta',
-    'Limpieza',
-    'Extracción',
-    'Endodoncia',
-    'Operatoria simple',
-    'Operatoria compleja',
-    'Prótesis',
-    'Ortodoncia',
-    'Implante',
-    'Otro',
-];
+const TRATAMIENTOS = ['', 'Consulta', 'Limpieza', 'Extracción', 'Endodoncia', 'Operatoria simple', 'Operatoria compleja', 'Prótesis', 'Ortodoncia', 'Implante', 'Otro'];
 
-const FILAS_INICIALES = 1;
-
-function filaVacia() {
-    return {
-        fecha: '',
-        tratamiento: '',
-        diente: '',
-        caras: '',
-        observaciones: '',
-        presupuesto: '',
-        entrega: '',
-    };
-}
+const filaVacia = () => ({
+    fecha: '', tratamiento: '', diente: '', caras: '', observaciones: '', presupuesto: '', entrega: '',
+});
 
 function calcularSaldo(presupuesto, entrega) {
     const p = parseFloat((presupuesto || '').replace(/\./g, '').replace(',', '.')) || 0;
@@ -60,51 +38,51 @@ function getSaldoClass(saldo) {
 }
 
 function SeguimientoTratamiento({ onChange, valores = {} }) {
+    // Estado local para los inputs inmediatos
     const [filas, setFilas] = useState(() => {
         if (valores.seguimiento && Array.isArray(valores.seguimiento) && valores.seguimiento.length > 0) {
             return [...valores.seguimiento];
         }
-        return Array.from({ length: FILAS_INICIALES }, filaVacia);
+        return [filaVacia()];
     });
 
-    useEffect(() => {
-        onChange({ target: { name: 'seguimiento', value: filas } });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filas]);
-
-    const actualizarFila = (idx, campo, valor) => {
-        setFilas(prev => {
-            const copia = prev.map((f, i) => i === idx ? { ...f, [campo]: valor } : f);
-            return copia;
-        });
+    // Sincronizar con el padre SOLO cuando las filas locales cambian realmente
+    // Usamos una función interna para actualizar ambos estados a la vez
+    const propagarCambios = (nuevasFilas) => {
+        setFilas(nuevasFilas);
+        onChange({ target: { name: 'seguimiento', value: nuevasFilas } });
     };
 
-    const agregarFila = () => setFilas(prev => [...prev, filaVacia()]);
+    const actualizarFila = (idx, campo, valor) => {
+        const nuevasFilas = filas.map((f, i) => i === idx ? { ...f, [campo]: valor } : f);
+        propagarCambios(nuevasFilas);
+    };
+
+    const agregarFila = () => {
+        const nuevasFilas = [...filas, filaVacia()];
+        propagarCambios(nuevasFilas);
+    };
 
     const eliminarFila = (idx) => {
-        setFilas(prev => prev.filter((_, i) => i !== idx));
+        const nuevasFilas = filas.filter((_, i) => i !== idx);
+        propagarCambios(nuevasFilas);
     };
 
     return (
         <div className="section-wrapper">
-            {/* Título */}
-            <div className="section-title">
-                <span>📋 Seguimiento de Tratamientos</span>
-            </div>
-
-            {/* Tabla */}
+            <div className="section-title"><span>Seguimiento de Tratamientos</span></div>
             <div className="section-body st-table-container">
                 <table className="st-table">
                     <colgroup>
-                        <col style={{ width: '13%' }} />
-                        <col style={{ width: '16%' }} />
-                        <col style={{ width: '7%' }} />
-                        <col style={{ width: '7%' }} />
-                        <col style={{ width: '19%' }} />
-                        <col style={{ width: '13%' }} />
-                        <col style={{ width: '13%' }} />
-                        <col style={{ width: '10%' }} />
-                        <col style={{ width: '2%' }} />
+                        <col style={{ width: '135px' }} />
+                        <col style={{ width: '160px' }} />
+                        <col style={{ width: '75px' }} />
+                        <col style={{ width: '85px' }} />
+                        <col />
+                        <col style={{ width: '110px' }} />
+                        <col style={{ width: '110px' }} />
+                        <col style={{ width: '100px' }} />
+                        <col style={{ width: '35px' }} />
                     </colgroup>
                     <thead>
                         <tr>
@@ -122,10 +100,8 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                     <tbody>
                         {filas.map((fila, idx) => {
                             const saldo = calcularSaldo(fila.presupuesto, fila.entrega);
-                            const rowClass = `st-row ${idx % 2 === 0 ? 'st-row-even' : 'st-row-odd'}`;
                             return (
-                                <tr key={idx} className={rowClass}>
-                                    {/* Fecha */}
+                                <tr key={idx} className={`st-row ${idx % 2 === 0 ? 'st-row-even' : 'st-row-odd'}`}>
                                     <td className="st-td">
                                         <div className="fecha-wrapper">
                                             <span className="fecha-icon">📅</span>
@@ -133,112 +109,39 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                                                 className="pr-calendar-table"
                                                 value={fila.fecha ? new Date(`${fila.fecha}T12:00:00`) : null}
                                                 onChange={e => actualizarFila(idx, 'fecha', e.value ? format(e.value, 'yyyy-MM-dd') : '')}
-                                                dateFormat="dd/mm/yy"
-                                                locale="es"
-                                                placeholder="dd/mm/aaaa"
+                                                dateFormat="dd/mm/yy" locale="es" placeholder="dd/mm/aaaa"
                                             />
                                         </div>
                                     </td>
-
-                                    {/* Tratamiento */}
                                     <td className="st-td">
-                                        <Dropdown
-                                            className="pr-dropdown-table"
-                                            value={fila.tratamiento}
-                                            options={TRATAMIENTOS}
-                                            onChange={e => actualizarFila(idx, 'tratamiento', e.value)}
-                                        />
+                                        <Dropdown className="pr-dropdown-table" value={fila.tratamiento} options={TRATAMIENTOS} onChange={e => actualizarFila(idx, 'tratamiento', e.value)} />
                                     </td>
-
-                                    {/* Diente */}
                                     <td className="st-td st-td--center">
-                                        <InputText
-                                            className="pr-input-table"
-                                            style={{ textAlign: 'center' }}
-                                            value={fila.diente}
-                                            maxLength={6}
-                                            placeholder="—"
-                                            onChange={e => actualizarFila(idx, 'diente', e.target.value)}
-                                        />
+                                        <InputText className="pr-input-table" style={{ textAlign: 'center' }} value={fila.diente} maxLength={6} placeholder="—" onChange={e => actualizarFila(idx, 'diente', e.target.value)} />
                                     </td>
-
-                                    {/* Caras */}
                                     <td className="st-td st-td--center">
-                                        <InputText
-                                            className="pr-input-table"
-                                            style={{ textAlign: 'center' }}
-                                            value={fila.caras}
-                                            maxLength={8}
-                                            placeholder="—"
-                                            onChange={e => actualizarFila(idx, 'caras', e.target.value)}
-                                        />
+                                        <InputText className="pr-input-table" style={{ textAlign: 'center' }} value={fila.caras} maxLength={8} placeholder="—" onChange={e => actualizarFila(idx, 'caras', e.target.value)} />
                                     </td>
-
-                                    {/* Observaciones */}
                                     <td className="st-td">
-                                        <InputText
-                                            className="pr-input-table"
-                                            value={fila.observaciones}
-                                            placeholder="..."
-                                            onChange={e => actualizarFila(idx, 'observaciones', e.target.value)}
-                                        />
+                                        <InputText className="pr-input-table" value={fila.observaciones} placeholder="..." onChange={e => actualizarFila(idx, 'observaciones', e.target.value)} />
                                     </td>
-
-                                    {/* Presupuesto */}
                                     <td className="st-td st-td--right">
-                                        <InputText
-                                            className="pr-input-table"
-                                            style={{ textAlign: 'right' }}
-                                            value={fila.presupuesto}
-                                            placeholder="$0"
-                                            onChange={e => actualizarFila(idx, 'presupuesto', e.target.value)}
-                                        />
+                                        <InputText className="pr-input-table" style={{ textAlign: 'right' }} value={fila.presupuesto} placeholder="$0" onChange={e => actualizarFila(idx, 'presupuesto', e.target.value)} />
                                     </td>
-
-                                    {/* Entrega */}
                                     <td className="st-td st-td--right">
-                                        <InputText
-                                            className="pr-input-table"
-                                            style={{ textAlign: 'right' }}
-                                            value={fila.entrega}
-                                            placeholder="$0"
-                                            onChange={e => actualizarFila(idx, 'entrega', e.target.value)}
-                                        />
+                                        <InputText className="pr-input-table" style={{ textAlign: 'right' }} value={fila.entrega} placeholder="$0" onChange={e => actualizarFila(idx, 'entrega', e.target.value)} />
                                     </td>
-
-                                    {/* Saldo (calculado) */}
-                                    <td className="st-td st-td--no-border">
-                                        <span className={getSaldoClass(saldo)}>{saldo || '—'}</span>
-                                    </td>
-
-                                    {/* Botón Eliminar */}
+                                    <td className="st-td st-td--no-border"><span className={getSaldoClass(saldo)}>{saldo || '—'}</span></td>
                                     <td className="st-td st-td--acciones no-print">
-                                        {filas.length > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => eliminarFila(idx)}
-                                                className="st-btn-del"
-                                                title="Eliminar fila"
-                                            >
-                                                ✕
-                                            </button>
-                                        )}
+                                        {filas.length > 1 && <button type="button" onClick={() => eliminarFila(idx)} className="st-btn-del" title="Eliminar fila">✕</button>}
                                     </td>
                                 </tr>
                             );
                         })}
                     </tbody>
                 </table>
-
-                {/* Botón agregar fila */}
                 <div className="st-footer-actions no-print">
-                    <button
-                        type="button"
-                        onClick={agregarFila}
-                        className="st-btn-add"
-                    >
-                        + Agregar fila
-                    </button>
+                    <button type="button" onClick={agregarFila} className="st-btn-add">+ Agregar fila</button>
                 </div>
             </div>
         </div>
