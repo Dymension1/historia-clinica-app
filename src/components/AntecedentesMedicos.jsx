@@ -11,17 +11,14 @@ function AntecedentesMedicos({ onChange, valores = {} }) {
         onChange({ target: { name: e.target.name, value: e.value } });
     };
 
+    const condiciones = ['Cardiopatías', 'Hipertensión / Hipotensión', 'Diabetes', 'Asma', 'Anemia', 'Trastornos tiroideos', 'Epilepsia', 'Trastornos de coagulación', 'Embarazo'];
+
     return (
         <div className="section-wrapper">
-            {/* Título */}
             <div className="section-title">Antecedentes Médicos</div>
-
-            {/* Cuerpo: dos columnas */}
             <div className="section-body" style={{ display: 'flex' }}>
-
-                {/* ── Columna izquierda: condiciones ── */}
                 <div className="section-col" style={{ flex: 1, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {['Cardiopatías', 'Hipertensión / Hipotensión', 'Diabetes', 'Asma', 'Anemia', 'Trastornos tiroideos', 'Epilepsia', 'Trastornos de coagulación', 'Embarazo'].map((cond) => (
+                    {condiciones.map((cond) => (
                         <label key={cond} className="form-label-item">
                             <Checkbox inputId={cond} name={`cond_${cond}`} onChange={handleCheckChange} checked={!!valores[`cond_${cond}`]} />
                             <span>{cond}</span>
@@ -39,9 +36,7 @@ function AntecedentesMedicos({ onChange, valores = {} }) {
                     </label>
                 </div>
 
-                {/* ── Columna derecha: preguntas Sí/No ── */}
                 <div style={{ flex: 1, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-
                     <div className="form-row-item">
                         <Checkbox name="fuma" onChange={handleCheckChange} checked={!!valores.fuma} />
                         <span>¿Fuma?</span>
@@ -131,7 +126,6 @@ function AntecedentesMedicos({ onChange, valores = {} }) {
                         <span>¿Tuvo reacciones adversas?</span>
                         <InputText className="pr-input" name="reacciones_detalle" onChange={onChange} value={valores.reacciones_detalle || ''} placeholder="Especificar" style={{ flex: 1 }} />
                     </div>
-
                 </div>
             </div>
         </div>
