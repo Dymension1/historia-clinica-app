@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { historiaClinicaSchema } from '../schemas/historiaClinicaSchema';
 
 /**
@@ -134,7 +135,8 @@ export const valoresPorDefecto = {
  * @param {Function} param0.onGuardadoOk - Callback opcional lanzado tras guardarse correctamente en base de datos.
  * @returns {Object} Un objeto conteniendo los métodos del formulario y la capa de guardado para la vista. 
  */
-export function useHistoriaClinica({ onGuardadoOk } = {}) {
+export function useHistoriaClinica() {
+  const queryClient = useQueryClient();
   const formMethods = useForm({
     resolver: zodResolver(historiaClinicaSchema),
     defaultValues: valoresPorDefecto,
@@ -143,7 +145,6 @@ export function useHistoriaClinica({ onGuardadoOk } = {}) {
 
   const [editandoId, setEditandoId] = useState(null);
   const [guardando, setGuardando] = useState(false);
-  const [estadoGuardado, setEstadoGuardado] = useState(null);
   const [cargandoHistoria, setCargandoHistoria] = useState(false);
 
   /**
@@ -153,7 +154,6 @@ export function useHistoriaClinica({ onGuardadoOk } = {}) {
   const abrirNueva = () => {
     formMethods.reset(valoresPorDefecto);
     setEditandoId(null);
-    setEstadoGuardado(null);
   };
 
   /**
@@ -196,7 +196,6 @@ export function useHistoriaClinica({ onGuardadoOk } = {}) {
 
       formMethods.reset(formData);
       setEditandoId(id);
-      setEstadoGuardado(null);
     }
     setCargandoHistoria(false);
   };
@@ -212,7 +211,6 @@ export function useHistoriaClinica({ onGuardadoOk } = {}) {
    */
   const guardarHistoria = async (userId, datos) => {
     setGuardando(true);
-    setEstadoGuardado(null);
 
     const registro = formToRow(datos, userId);
     const seguimientoFilas = datos.seguimiento || [];
@@ -267,16 +265,17 @@ export function useHistoriaClinica({ onGuardadoOk } = {}) {
 
     setGuardando(false);
     if (!error) {
-      setEstadoGuardado('ok');
-      if (onGuardadoOk) setTimeout(onGuardadoOk, 1800);
+      queryClient.invalidateQueries({ queryKey: ['historias'] });
+      queryClient.invalidateQueries({ queryKey: ['totalesHistorias'] });
+      return { success: true };
     } else {
       console.error('Error al guardar:', error);
-      setEstadoGuardado('error');
+      return { success: false, error };
     }
   };
 
   return {
-    formMethods, editandoId, guardando, estadoGuardado, cargandoHistoria,
-    abrirNueva, abrirEditar, guardarHistoria, setEstadoGuardado,
+    formMethods, editandoId, guardando, cargandoHistoria,
+    abrirNueva, abrirEditar, guardarHistoria,
   };
 }

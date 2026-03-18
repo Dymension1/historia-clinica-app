@@ -9,6 +9,8 @@ import HistoriaOdontologica from '../components/HistoriaOdontologica';
 import Diagnostico from '../components/Diagnostico';
 import SeguimientoTratamiento from '../components/SeguimientoTratamiento';
 import { Skeleton } from 'primereact/skeleton';
+import { Toast } from 'primereact/toast';
+import { useRef } from 'react';
 
 /**
  * Componente "Wrapper" (Envoltorio) enrutado para la creación y/o edición de pacientes.
@@ -27,17 +29,17 @@ import { Skeleton } from 'primereact/skeleton';
 function HistoriaFormPage({ usuario, userId, cerrarSesion }) {
   const navigate = useNavigate();
   const { id } = useParams();
+  const toast = useRef(null);
 
   const {
     formMethods,
     editandoId,
     guardando,
-    estadoGuardado,
     cargandoHistoria,
     abrirNueva,
     abrirEditar,
     guardarHistoria,
-  } = useHistoriaClinica({ onGuardadoOk: () => navigate('/dashboard') });
+  } = useHistoriaClinica();
 
   useEffect(() => {
     if (id) {
@@ -54,8 +56,19 @@ function HistoriaFormPage({ usuario, userId, cerrarSesion }) {
    */
   const manejarImpresion = () => window.print();
 
+  const manejarSubmit = async (datos) => {
+    const res = await guardarHistoria(userId, datos);
+    if (res?.success) {
+      toast.current.show({ severity: 'success', summary: id ? 'Actualizado' : 'Guardado', detail: 'Registro guardado correctamente', life: 1500 });
+      setTimeout(() => navigate('/dashboard'), 1500);
+    } else {
+      toast.current.show({ severity: 'error', summary: 'Error', detail: 'Error al guardar. Verificá tu conexión.', life: 3000 });
+    }
+  };
+
   return (
       <div className="form-page-wrapper">
+        <Toast ref={toast} />
         {/* ── Topbar Unificado ── */}
         <Topbar usuario={usuario}>
           <button className="btn-back" onClick={() => navigate('/dashboard')}>
@@ -73,7 +86,7 @@ function HistoriaFormPage({ usuario, userId, cerrarSesion }) {
           </h1>
           <div className="form-card">
             <FormProvider {...formMethods}>
-              <form onSubmit={formMethods.handleSubmit((datos) => guardarHistoria(userId, datos))}>
+              <form onSubmit={formMethods.handleSubmit(manejarSubmit)}>
                 <div className="form-inner" key={editandoId || 'nuevo'}>
                   {cargandoHistoria ? (
                     <div style={{ padding: '2rem' }}>
@@ -110,10 +123,6 @@ function HistoriaFormPage({ usuario, userId, cerrarSesion }) {
                 </div>
               </form>
             </FormProvider>
-
-            {/* Toasts del formulario */}
-            {estadoGuardado === 'ok' && <div className="toast toast-ok">✅ Guardado correctamente — volviendo al panel...</div>}
-            {estadoGuardado === 'error' && <div className="toast toast-error">❌ Error al guardar. Verificá tu conexión.</div>}
           </div>
         </div>
       </div>
