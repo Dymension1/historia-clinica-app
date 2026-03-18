@@ -1,15 +1,10 @@
 import { InputText } from 'primereact/inputtext';
 import { Checkbox } from 'primereact/checkbox';
 import { RadioButton } from 'primereact/radiobutton';
+import { useFormContext, Controller } from 'react-hook-form';
 
-function AntecedentesMedicos({ onChange, valores = {} }) {
-    const handleCheckChange = (e) => {
-        onChange({ target: { name: e.target.name, type: 'checkbox', checked: e.checked } });
-    };
-
-    const handleRadioChange = (e) => {
-        onChange({ target: { name: e.target.name, value: e.value } });
-    };
+function AntecedentesMedicos() {
+    const { control } = useFormContext();
 
     const condiciones = ['Cardiopatías', 'Hipertensión / Hipotensión', 'Diabetes', 'Asma', 'Anemia', 'Trastornos tiroideos', 'Epilepsia', 'Trastornos de coagulación', 'Embarazo'];
 
@@ -20,111 +15,165 @@ function AntecedentesMedicos({ onChange, valores = {} }) {
                 <div className="section-col" style={{ flex: 1, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {condiciones.map((cond) => (
                         <label key={cond} className="form-label-item">
-                            <Checkbox inputId={cond} name={`cond_${cond}`} onChange={handleCheckChange} checked={!!valores[`cond_${cond}`]} />
+                            <Controller name={`cond_${cond}`} control={control} render={({ field }) => (
+                                <Checkbox inputId={cond} checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
+                            )} />
                             <span>{cond}</span>
                         </label>
                     ))}
                     <label className="form-label-item">
-                        <Checkbox name="cond_autoinmunes" onChange={handleCheckChange} checked={!!valores.cond_autoinmunes} />
+                        <Controller name="cond_autoinmunes" control={control} render={({ field }) => (
+                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
+                        )} />
                         Enfermedades autoinmunes:
-                        <InputText className="pr-input" name="autoinmunes_detalle" onChange={onChange} value={valores.autoinmunes_detalle || ''} style={{ flex: 1 }} />
+                        <Controller name="autoinmunes_detalle" control={control} render={({ field }) => (
+                             <InputText className="pr-input" {...field} style={{ flex: 1 }} />
+                        )} />
                     </label>
                     <label className="form-label-item" style={{ marginBottom: 0 }}>
-                        <Checkbox name="cond_otras" onChange={handleCheckChange} checked={!!valores.cond_otras} />
+                        <Controller name="cond_otras" control={control} render={({ field }) => (
+                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
+                        )} />
                         Otras:
-                        <InputText className="pr-input" name="otras_detalle" onChange={onChange} value={valores.otras_detalle || ''} style={{ flex: 1 }} />
+                        <Controller name="otras_detalle" control={control} render={({ field }) => (
+                             <InputText className="pr-input" {...field} style={{ flex: 1 }} />
+                        )} />
                     </label>
                 </div>
 
                 <div style={{ flex: 1, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                     <div className="form-row-item">
-                        <Checkbox name="fuma" onChange={handleCheckChange} checked={!!valores.fuma} />
+                        <Controller name="fuma" control={control} render={({ field }) => (
+                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
+                        )} />
                         <span>¿Fuma?</span>
-                        <InputText className="pr-input" name="fuma_detalle" onChange={onChange} value={valores.fuma_detalle || ''} placeholder="Cantidad / tipo" style={{ flex: 1 }} />
+                        <Controller name="fuma_detalle" control={control} render={({ field }) => (
+                             <InputText className="pr-input" {...field} placeholder="Cantidad / tipo" style={{ flex: 1 }} />
+                        )} />
                     </div>
 
                     <div className="form-row-item">
-                        <Checkbox name="alcohol" onChange={handleCheckChange} checked={!!valores.alcohol} />
+                        <Controller name="alcohol" control={control} render={({ field }) => (
+                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
+                        )} />
                         <span>¿Consume alcohol con frecuencia?</span>
-                        <label className="form-radio-label">
-                            <RadioButton name="alcohol_rta" value="Si" onChange={handleRadioChange} checked={valores.alcohol_rta === 'Si'} /> 
-                            <span>Sí</span>
-                        </label>
-                        <label className="form-radio-label">
-                            <RadioButton name="alcohol_rta" value="No" onChange={handleRadioChange} checked={valores.alcohol_rta === 'No'} /> 
-                            <span>No</span>
-                        </label>
+                        <Controller name="alcohol_rta" control={control} render={({ field }) => (
+                            <>
+                                <label className="form-radio-label">
+                                    <RadioButton inputId="alcohol_si" {...field} value="Si" checked={field.value === 'Si'} /> 
+                                    <span>Sí</span>
+                                </label>
+                                <label className="form-radio-label">
+                                    <RadioButton inputId="alcohol_no" {...field} value="No" checked={field.value === 'No'} /> 
+                                    <span>No</span>
+                                </label>
+                            </>
+                        )} />
                     </div>
 
                     <div className="form-row-item">
-                        <Checkbox name="hiloDental" onChange={handleCheckChange} checked={!!valores.hiloDental} />
+                        <Controller name="hiloDental" control={control} render={({ field }) => (
+                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
+                        )} />
                         <span>¿Usa hilo dental?</span>
-                        <label className="form-radio-label">
-                            <RadioButton name="hilo_frec" value="1" onChange={handleRadioChange} checked={valores.hilo_frec === '1'} /> 
-                            <span>1 vez/día</span>
-                        </label>
-                        <label className="form-radio-label">
-                            <RadioButton name="hilo_frec" value="3" onChange={handleRadioChange} checked={valores.hilo_frec === '3'} /> 
-                            <span>3 veces/día</span>
-                        </label>
+                        <Controller name="hilo_frec" control={control} render={({ field }) => (
+                            <>
+                                <label className="form-radio-label">
+                                    <RadioButton {...field} value="1" checked={field.value === '1'} /> 
+                                    <span>1 vez/día</span>
+                                </label>
+                                <label className="form-radio-label">
+                                    <RadioButton {...field} value="3" checked={field.value === '3'} /> 
+                                    <span>3 veces/día</span>
+                                </label>
+                            </>
+                        )} />
                     </div>
 
                     <div className="form-row-item">
-                        <Checkbox name="enjuague" onChange={handleCheckChange} checked={!!valores.enjuague} />
+                        <Controller name="enjuague" control={control} render={({ field }) => (
+                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
+                        )} />
                         <span>¿Usa enjuague bucal?</span>
-                        <label className="form-radio-label">
-                            <RadioButton name="enjuague_rta" value="Si" onChange={handleRadioChange} checked={valores.enjuague_rta === 'Si'} /> 
-                            <span>Sí</span>
-                        </label>
-                        <label className="form-radio-label">
-                            <RadioButton name="enjuague_rta" value="No" onChange={handleRadioChange} checked={valores.enjuague_rta === 'No'} /> 
-                            <span>No</span>
-                        </label>
+                        <Controller name="enjuague_rta" control={control} render={({ field }) => (
+                            <>
+                                <label className="form-radio-label">
+                                    <RadioButton {...field} value="Si" checked={field.value === 'Si'} /> 
+                                    <span>Sí</span>
+                                </label>
+                                <label className="form-radio-label">
+                                    <RadioButton {...field} value="No" checked={field.value === 'No'} /> 
+                                    <span>No</span>
+                                </label>
+                            </>
+                        )} />
                     </div>
 
                     <div className="form-row-item">
-                        <Checkbox name="encias" onChange={handleCheckChange} checked={!!valores.encias} />
+                        <Controller name="encias" control={control} render={({ field }) => (
+                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
+                        )} />
                         <span>¿Sangran sus encías?</span>
-                        <label className="form-radio-label">
-                            <RadioButton name="encias_rta" value="Si" onChange={handleRadioChange} checked={valores.encias_rta === 'Si'} /> 
-                            <span>Sí</span>
-                        </label>
-                        <label className="form-radio-label">
-                            <RadioButton name="encias_rta" value="No" onChange={handleRadioChange} checked={valores.encias_rta === 'No'} /> 
-                            <span>No</span>
-                        </label>
+                        <Controller name="encias_rta" control={control} render={({ field }) => (
+                            <>
+                                <label className="form-radio-label">
+                                    <RadioButton {...field} value="Si" checked={field.value === 'Si'} /> 
+                                    <span>Sí</span>
+                                </label>
+                                <label className="form-radio-label">
+                                    <RadioButton {...field} value="No" checked={field.value === 'No'} /> 
+                                    <span>No</span>
+                                </label>
+                            </>
+                        )} />
                     </div>
 
                     <div className="form-row-item">
-                        <Checkbox name="sensibilidad" onChange={handleCheckChange} checked={!!valores.sensibilidad} />
+                        <Controller name="sensibilidad" control={control} render={({ field }) => (
+                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
+                        )} />
                         <span>¿Siente sensibilidad dental?</span>
-                        <label className="form-radio-label">
-                            <RadioButton name="sensibilidad_rta" value="Si" onChange={handleRadioChange} checked={valores.sensibilidad_rta === 'Si'} /> 
-                            <span>Sí</span>
-                        </label>
-                        <label className="form-radio-label">
-                            <RadioButton name="sensibilidad_rta" value="No" onChange={handleRadioChange} checked={valores.sensibilidad_rta === 'No'} /> 
-                            <span>No</span>
-                        </label>
+                        <Controller name="sensibilidad_rta" control={control} render={({ field }) => (
+                            <>
+                                <label className="form-radio-label">
+                                    <RadioButton {...field} value="Si" checked={field.value === 'Si'} /> 
+                                    <span>Sí</span>
+                                </label>
+                                <label className="form-radio-label">
+                                    <RadioButton {...field} value="No" checked={field.value === 'No'} /> 
+                                    <span>No</span>
+                                </label>
+                            </>
+                        )} />
                     </div>
 
                     <div className="form-row-item">
-                        <Checkbox name="bruxismo" onChange={handleCheckChange} checked={!!valores.bruxismo} />
+                        <Controller name="bruxismo" control={control} render={({ field }) => (
+                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
+                        )} />
                         <span>¿Bruxismo (aprieta o rechina)?</span>
-                        <label className="form-radio-label">
-                            <RadioButton name="bruxismo_rta" value="Si" onChange={handleRadioChange} checked={valores.bruxismo_rta === 'Si'} /> 
-                            <span>Sí</span>
-                        </label>
-                        <label className="form-radio-label">
-                            <RadioButton name="bruxismo_rta" value="No" onChange={handleRadioChange} checked={valores.bruxismo_rta === 'No'} /> 
-                            <span>No</span>
-                        </label>
+                        <Controller name="bruxismo_rta" control={control} render={({ field }) => (
+                            <>
+                                <label className="form-radio-label">
+                                    <RadioButton {...field} value="Si" checked={field.value === 'Si'} /> 
+                                    <span>Sí</span>
+                                </label>
+                                <label className="form-radio-label">
+                                    <RadioButton {...field} value="No" checked={field.value === 'No'} /> 
+                                    <span>No</span>
+                                </label>
+                            </>
+                        )} />
                     </div>
 
                     <div className="form-row-item">
-                        <Checkbox name="reacciones" onChange={handleCheckChange} checked={!!valores.reacciones} />
+                        <Controller name="reacciones" control={control} render={({ field }) => (
+                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
+                        )} />
                         <span>¿Tuvo reacciones adversas?</span>
-                        <InputText className="pr-input" name="reacciones_detalle" onChange={onChange} value={valores.reacciones_detalle || ''} placeholder="Especificar" style={{ flex: 1 }} />
+                         <Controller name="reacciones_detalle" control={control} render={({ field }) => (
+                            <InputText className="pr-input" {...field} placeholder="Especificar" style={{ flex: 1 }} />
+                        )} />
                     </div>
                 </div>
             </div>
