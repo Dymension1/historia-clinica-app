@@ -1,7 +1,15 @@
 import { useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 import '../styles/Login.css';
 
+/**
+ * Pantalla monolítica de Autenticación que gestiona las identidades operativas de odontólogos/admin.
+ * Controla visualmente el ingreso, ofusca contraseñas y propaga los permisos a Supabase.
+ *
+ * @param {Object} props
+ * @param {Function} props.onLogin - Callback accionado tras la verificación exitosa de credenciales remota (inyectado desde base para control).
+ * @returns {JSX.Element} Target visual para el formuario de ingreso al sistema.
+ */
 function Login({ onLogin }) {
     const [usuario, setUsuario] = useState('');
     const [contrasena, setContrasena] = useState('');
