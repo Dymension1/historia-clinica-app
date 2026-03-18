@@ -1,17 +1,20 @@
 import { InputTextarea } from 'primereact/inputtextarea';
+import { useFormContext, Controller } from 'react-hook-form';
 
-function Diagnostico({ onChange, valores = {} }) {
+function Diagnostico() {
+    const { control } = useFormContext();
+
     return (
         <div className="section-wrapper">
             <div className="section-title">Diagnóstico</div>
-            <InputTextarea
-                name="diagnostico"
-                className="diagnostico-textarea"
-                onChange={onChange}
-                value={valores.diagnostico || ''}
-                placeholder="Escribir diagnóstico aquí..."
-                autoResize
-            />
+            <Controller name="diagnostico" control={control} render={({ field }) => (
+                <InputTextarea
+                    {...field}
+                    className="diagnostico-textarea"
+                    placeholder="Escribir diagnóstico aquí..."
+                    autoResize
+                />
+            )} />
         </div>
     );
 }

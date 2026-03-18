@@ -1,17 +1,19 @@
-import { useState } from 'react';
 import { useAuth } from './hooks/useAuth';
-import { useHistoriaClinica } from './hooks/useHistoriaClinica';
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import './styles/form.css';
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import Topbar from './components/Topbar';
-import DatosPersonales from './components/DatosPersonales';
-import AntecedentesMedicos from './components/AntecedentesMedicos';
-import HistoriaOdontologica from './components/HistoriaOdontologica';
-import Diagnostico from './components/Diagnostico';
-import SeguimientoTratamiento from './components/SeguimientoTratamiento';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import HistoriaFormPage from './pages/HistoriaFormPage';
 
-// ── Wrapper global (FUERA de App para evitar re-montaje infinito) ──
+/**
+ * Componente decorativo global que inyecta elementos visuales (ej. Orbes de fondo) 
+ * recurrentes para las distintas pantallas (Login, Dashboard, Formulario).
+ * Se declara fuera de `App` para evitar rómper la referencialidad y evitar re-montajes.
+ * 
+ * @param {Object} props - Propiedades estándar de React.
+ * @param {React.ReactNode} props.children - Contenido embebido a renderizar.
+ * @returns {JSX.Element} Layout contenedor oscuro global.
+ */
 const GlobalLayout = ({ children }) => (
   <div className="app-container">
     <div className="orb orb-1"></div>
@@ -20,33 +22,16 @@ const GlobalLayout = ({ children }) => (
   </div>
 );
 
+/**
+ * Punto de entrada principal enrutado inteligente de la aplicación (`react-router-dom`).
+ * Intercepta y coordina el estado general de autenticación a través de `useAuth()`.
+ * Protege las rutas mediante evaluación condicional directa y dispara la navegación segura.
+ * 
+ * @returns {JSX.Element} Árbol de enrutamiento principal.
+ */
 function App() {
   const { usuario, userId, cargando, cerrarSesion } = useAuth();
-  // vista: 'dashboard' | 'nueva' | 'editar'
-  const [vista, setVista] = useState('dashboard');
-
-  const {
-    datos,
-    editandoId,
-    guardando,
-    estadoGuardado,
-    manejarCambio,
-    abrirNueva,
-    abrirEditar,
-    guardarHistoria,
-  } = useHistoriaClinica({ onGuardadoOk: () => setVista('dashboard') });
-
-  const manejarImpresion = () => window.print();
-
-  const handleAbrirNueva = () => {
-    abrirNueva();
-    setVista('nueva');
-  };
-
-  const handleAbrirEditar = async (id) => {
-    await abrirEditar(id);
-    setVista('editar');
-  };
+  const navigate = useNavigate();
 
   // ── Verificando sesión inicial (evita flash de login) ──
   if (cargando) {
@@ -76,64 +61,20 @@ function App() {
     );
   }
 
-  // ── Vista: Dashboard ──
-  if (vista === 'dashboard') {
-    return (
-      <GlobalLayout>
-        <Dashboard
-          usuario={usuario}
-          onNueva={handleAbrirNueva}
-          onEditar={handleAbrirEditar}
-          onCerrarSesion={cerrarSesion}
-        />
-      </GlobalLayout>
-    );
-  }
-
-  // ── Vista: Formulario (nueva o edición) ──
+  // ── Modos Conectados → Rutas ──
   return (
     <GlobalLayout>
-      <div className="form-page-wrapper">
-        {/* ── Topbar Unificado ── */}
-        <Topbar usuario={usuario}>
-          <button className="btn-back" onClick={() => setVista('dashboard')}>
-            <i className="pi pi-arrow-left"></i> Dashboard
-          </button>
-          <button className="btn-ghost-red" onClick={cerrarSesion}>
-            Cerrar sesión
-          </button>
-        </Topbar>
-
-        {/* ── Cuerpo ── */}
-        <div className="form-body">
-          <h1 className="form-page-title">
-            {editandoId ? 'Editar Historia Clínica' : 'Nueva Historia Clínica'}
-          </h1>
-          <div className="form-card">
-            {/* Secciones — key fuerza re-montaje al cambiar de registro */}
-            <div className="form-inner" key={editandoId || 'nuevo'}>
-              <DatosPersonales onChange={manejarCambio} valores={datos} />
-              <AntecedentesMedicos onChange={manejarCambio} valores={datos} />
-              <HistoriaOdontologica onChange={manejarCambio} valores={datos} />
-              <Diagnostico onChange={manejarCambio} valores={datos} />
-              <SeguimientoTratamiento onChange={manejarCambio} valores={datos} />
-            </div>
-
-            {/* Acciones */}
-            <div className="form-actions no-print">
-              <button className="btn-save" onClick={() => guardarHistoria(userId)} disabled={guardando}>
-                {guardando ? '⏳ Guardando...' : editandoId ? '💾 Guardar cambios' : '💾 Guardar Historia'}
-              </button>
-              <button className="btn-print" onClick={manejarImpresion}>🖨️ Imprimir / PDF</button>
-              <button className="btn-cancel-form" onClick={() => setVista('dashboard')}>✕ Cancelar</button>
-            </div>
-
-            {/* Toasts del formulario */}
-            {estadoGuardado === 'ok' && <div className="toast toast-ok">✅ Guardado correctamente — volviendo al panel...</div>}
-            {estadoGuardado === 'error' && <div className="toast toast-error">❌ Error al guardar. Verificá tu conexión.</div>}
-          </div>
-        </div>
-      </div>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<Dashboard
+          usuario={usuario}
+          onNueva={() => navigate('/historia/nueva')}
+          onEditar={(id) => navigate(`/historia/editar/${id}`)}
+          onCerrarSesion={cerrarSesion}
+        />} />
+        <Route path="/historia/nueva" element={<HistoriaFormPage usuario={usuario} userId={userId} cerrarSesion={cerrarSesion} />} />
+        <Route path="/historia/editar/:id" element={<HistoriaFormPage usuario={usuario} userId={userId} cerrarSesion={cerrarSesion} />} />
+      </Routes>
     </GlobalLayout>
   );
 }

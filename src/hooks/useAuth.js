@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 /**
- * Hook que encapsula toda la lógica de autenticación con Supabase.
+ * Hook que encapsula toda la lógica de autenticación y estado de sesión interactuando contra Supabase.
+ * Escucha automáticamente los cambios de estado (login/logout/caducidad de tokens).
  *
- * Devuelve:
- *  - usuario      → email del usuario logueado (null si no hay sesión)
- *  - userId       → UUID del usuario (null si no hay sesión)
- *  - cargando     → true mientras se verifica la sesión inicial (evita flash de login)
- *  - cerrarSesion → función para hacer sign-out
+ * @returns {Object} Contexto de autenticación.
+ * @returns {string|null} return.usuario - Correo electrónico del usuario logueado. `null` si no hay sesión.
+ * @returns {string|null} return.userId - UUID Identificador único del usuario. `null` si no hay sesión.
+ * @returns {boolean} return.cargando - `true` mientras se resuelve la sesión inicial contra Supabase (útil para prevenir flashes y saltos a `/login`).
+ * @returns {Function} return.cerrarSesion - Método para despachar asíncronamente un "Sign Out".
  */
 export function useAuth() {
   const [usuario, setUsuario]   = useState(null);

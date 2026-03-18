@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { addLocale } from 'primereact/api';
+import { useFormContext, useFieldArray, Controller } from 'react-hook-form';
 import '../styles/SeguimientoTratamiento.css';
 
 addLocale('es', {
@@ -37,36 +37,14 @@ function getSaldoClass(saldo) {
     return 'st-saldo st-saldo--pendiente';
 }
 
-function SeguimientoTratamiento({ onChange, valores = {} }) {
-    // Estado local para los inputs inmediatos
-    const [filas, setFilas] = useState(() => {
-        if (valores.seguimiento && Array.isArray(valores.seguimiento) && valores.seguimiento.length > 0) {
-            return [...valores.seguimiento];
-        }
-        return [filaVacia()];
+function SeguimientoTratamiento() {
+    const { control, watch } = useFormContext();
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: 'seguimiento'
     });
 
-    // Sincronizar con el padre SOLO cuando las filas locales cambian realmente
-    // Usamos una función interna para actualizar ambos estados a la vez
-    const propagarCambios = (nuevasFilas) => {
-        setFilas(nuevasFilas);
-        onChange({ target: { name: 'seguimiento', value: nuevasFilas } });
-    };
-
-    const actualizarFila = (idx, campo, valor) => {
-        const nuevasFilas = filas.map((f, i) => i === idx ? { ...f, [campo]: valor } : f);
-        propagarCambios(nuevasFilas);
-    };
-
-    const agregarFila = () => {
-        const nuevasFilas = [...filas, filaVacia()];
-        propagarCambios(nuevasFilas);
-    };
-
-    const eliminarFila = (idx) => {
-        const nuevasFilas = filas.filter((_, i) => i !== idx);
-        propagarCambios(nuevasFilas);
-    };
+    const seguimientoWatch = watch('seguimiento');
 
     return (
         <div className="section-wrapper">
@@ -98,42 +76,59 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {filas.map((fila, idx) => {
-                            const saldo = calcularSaldo(fila.presupuesto, fila.entrega);
+                        {fields.map((field, idx) => {
+                            const currentP = seguimientoWatch?.[idx]?.presupuesto;
+                            const currentE = seguimientoWatch?.[idx]?.entrega;
+                            const saldo = calcularSaldo(currentP, currentE);
+                            
                             return (
-                                <tr key={idx} className={`st-row ${idx % 2 === 0 ? 'st-row-even' : 'st-row-odd'}`}>
+                                <tr key={field.id} className={`st-row ${idx % 2 === 0 ? 'st-row-even' : 'st-row-odd'}`}>
                                     <td className="st-td">
                                         <div className="fecha-wrapper">
                                             <span className="fecha-icon">📅</span>
-                                            <Calendar
-                                                className="pr-calendar-table"
-                                                value={fila.fecha ? new Date(`${fila.fecha}T12:00:00`) : null}
-                                                onChange={e => actualizarFila(idx, 'fecha', e.value ? format(e.value, 'yyyy-MM-dd') : '')}
-                                                dateFormat="dd/mm/yy" locale="es" placeholder="dd/mm/aaaa"
-                                            />
+                                            <Controller name={`seguimiento.${idx}.fecha`} control={control} render={({ field: colField }) => (
+                                                <Calendar
+                                                    className="pr-calendar-table"
+                                                    value={colField.value ? parseISO(colField.value) : null}
+                                                    onChange={e => colField.onChange(e.value ? format(e.value, 'yyyy-MM-dd') : '')}
+                                                    dateFormat="dd/mm/yy" locale="es" placeholder="dd/mm/aaaa"
+                                                />
+                                            )} />
                                         </div>
                                     </td>
                                     <td className="st-td">
-                                        <Dropdown className="pr-dropdown-table" value={fila.tratamiento} options={TRATAMIENTOS} onChange={e => actualizarFila(idx, 'tratamiento', e.value)} />
+                                        <Controller name={`seguimiento.${idx}.tratamiento`} control={control} render={({ field: colField }) => (
+                                            <Dropdown className="pr-dropdown-table" {...colField} options={TRATAMIENTOS} />
+                                        )} />
                                     </td>
                                     <td className="st-td st-td--center">
-                                        <InputText className="pr-input-table" style={{ textAlign: 'center' }} value={fila.diente} maxLength={6} placeholder="—" onChange={e => actualizarFila(idx, 'diente', e.target.value)} />
+                                        <Controller name={`seguimiento.${idx}.diente`} control={control} render={({ field: colField }) => (
+                                            <InputText className="pr-input-table" style={{ textAlign: 'center' }} {...colField} maxLength={6} placeholder="—" />
+                                        )} />
                                     </td>
                                     <td className="st-td st-td--center">
-                                        <InputText className="pr-input-table" style={{ textAlign: 'center' }} value={fila.caras} maxLength={8} placeholder="—" onChange={e => actualizarFila(idx, 'caras', e.target.value)} />
+                                         <Controller name={`seguimiento.${idx}.caras`} control={control} render={({ field: colField }) => (
+                                            <InputText className="pr-input-table" style={{ textAlign: 'center' }} {...colField} maxLength={8} placeholder="—" />
+                                        )} />
                                     </td>
                                     <td className="st-td">
-                                        <InputText className="pr-input-table" value={fila.observaciones} placeholder="..." onChange={e => actualizarFila(idx, 'observaciones', e.target.value)} />
+                                        <Controller name={`seguimiento.${idx}.observaciones`} control={control} render={({ field: colField }) => (
+                                            <InputText className="pr-input-table" {...colField} placeholder="..." />
+                                        )} />
                                     </td>
                                     <td className="st-td st-td--right">
-                                        <InputText className="pr-input-table" style={{ textAlign: 'right' }} value={fila.presupuesto} placeholder="$0" onChange={e => actualizarFila(idx, 'presupuesto', e.target.value)} />
+                                         <Controller name={`seguimiento.${idx}.presupuesto`} control={control} render={({ field: colField }) => (
+                                            <InputText className="pr-input-table" style={{ textAlign: 'right' }} {...colField} placeholder="$0" />
+                                        )} />
                                     </td>
                                     <td className="st-td st-td--right">
-                                        <InputText className="pr-input-table" style={{ textAlign: 'right' }} value={fila.entrega} placeholder="$0" onChange={e => actualizarFila(idx, 'entrega', e.target.value)} />
+                                         <Controller name={`seguimiento.${idx}.entrega`} control={control} render={({ field: colField }) => (
+                                            <InputText className="pr-input-table" style={{ textAlign: 'right' }} {...colField} placeholder="$0" />
+                                        )} />
                                     </td>
                                     <td className="st-td st-td--no-border"><span className={getSaldoClass(saldo)}>{saldo || '—'}</span></td>
                                     <td className="st-td st-td--acciones no-print">
-                                        {filas.length > 1 && <button type="button" onClick={() => eliminarFila(idx)} className="st-btn-del" title="Eliminar fila">✕</button>}
+                                        {fields.length > 1 && <button type="button" onClick={() => remove(idx)} className="st-btn-del" title="Eliminar fila">✕</button>}
                                     </td>
                                 </tr>
                             );
@@ -141,7 +136,7 @@ function SeguimientoTratamiento({ onChange, valores = {} }) {
                     </tbody>
                 </table>
                 <div className="st-footer-actions no-print">
-                    <button type="button" onClick={agregarFila} className="st-btn-add">+ Agregar fila</button>
+                    <button type="button" onClick={() => append(filaVacia())} className="st-btn-add">+ Agregar fila</button>
                 </div>
             </div>
         </div>

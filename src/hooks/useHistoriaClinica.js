@@ -1,7 +1,16 @@
 import { useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../lib/supabaseClient';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { historiaClinicaSchema } from '../schemas/historiaClinicaSchema';
 
-// ── Convierte una fila de Supabase → estado del formulario ──
+/**
+ * Convierte un objeto de fila obtenido directo de la base de datos Supabase
+ * en la estructura con formato plano e inicializado que espera `react-hook-form`.
+ * 
+ * @param {Object} r - El registro de historia_clinica recuperado de la base de datos.
+ * @returns {Object} Un objeto con los campos inicializados para el estado del formulario.
+ */
 function rowToForm(r) {
   return {
     fecha: r.fecha || '',
@@ -49,7 +58,14 @@ function rowToForm(r) {
   };
 }
 
-// ── Convierte estado del formulario → fila de Supabase ──
+/**
+ * Realiza la conversión inversa; toma el estado centralizado del formulario administrado por 
+ * `react-hook-form` y lo mapea hacia el formato relacional explícito exigido por Supabase `historias_clinicas`.
+ * 
+ * @param {Object} datos - El estado de los valores validados provistos por React Hook Form.
+ * @param {string} userId - UUID del usuario (odontólogo/empleado) asociado en base de datos.
+ * @returns {Object} El payload preparado para operaciones de INSERT o UPDATE en Supabase.
+ */
 function formToRow(datos, userId) {
   return {
     user_id: userId,
@@ -97,24 +113,58 @@ function formToRow(datos, userId) {
   };
 }
 
+export const valoresPorDefecto = {
+  fecha: '', nombre: '', dni: '', sexo: '', fechaNacimiento: '', edad: '',
+  telefono: '', direccion: '', email: '', obraSocial: '', afiliado: '', motivoConsulta: '',
+  'cond_Cardiopatías': false, 'cond_Hipertensión / Hipotensión': false, 'cond_Diabetes': false,
+  'cond_Asma': false, 'cond_Anemia': false, 'cond_Trastornos tiroideos': false,
+  'cond_Epilepsia': false, 'cond_Trastornos de coagulación': false, 'cond_Embarazo': false,
+  cond_autoinmunes: false, autoinmunes_detalle: '', cond_otras: false, otras_detalle: '',
+  fuma: false, fuma_detalle: '', alcohol_rta: '', hilo_frec: '', enjuague_rta: '',
+  encias_rta: '', sensibilidad_rta: '', bruxismo_rta: '', reacciones: false, reacciones_detalle: '',
+  cepilla: '', hiloDental2: '', enjuague2: '', encias2: '', tejidos: '', diagnostico: '',
+  seguimiento: [{ fecha: '', tratamiento: '', diente: '', caras: '', observaciones: '', presupuesto: '', entrega: '' }]
+};
+
+/**
+ * Hook personalizado que centraliza todo el estado, validación y transacciones asíncronas
+ * del formulario de Historia Clínica, apoyándose en `react-hook-form` para Performance.
+ * 
+ * @param {Object} param0 - Configuraciones u hooks externos recibidos.
+ * @param {Function} param0.onGuardadoOk - Callback opcional lanzado tras guardarse correctamente en base de datos.
+ * @returns {Object} Un objeto conteniendo los métodos del formulario y la capa de guardado para la vista. 
+ */
 export function useHistoriaClinica({ onGuardadoOk } = {}) {
-  const [datos, setDatos] = useState({});
+  const formMethods = useForm({
+    resolver: zodResolver(historiaClinicaSchema),
+    defaultValues: valoresPorDefecto,
+    mode: 'onSubmit' // Validate on submit to improve initial performance
+  });
+
   const [editandoId, setEditandoId] = useState(null);
   const [guardando, setGuardando] = useState(false);
   const [estadoGuardado, setEstadoGuardado] = useState(null);
+  const [cargandoHistoria, setCargandoHistoria] = useState(false);
 
-  const manejarCambio = (e) => {
-    const { name, type, checked, value } = e.target;
-    setDatos((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-  };
-
+  /**
+   * Resetea el formulario por completo y lo prepara para insertar una nueva 
+   * historia en blanco, limpiando cualquier identificador previo o mensaje de feedback.
+   */
   const abrirNueva = () => {
-    setDatos({});
+    formMethods.reset(valoresPorDefecto);
     setEditandoId(null);
     setEstadoGuardado(null);
   };
 
+  /**
+   * Consulta una historia clínica vía Supabase utilizando su ID primario,
+   * además de consultar asíncronamente sus filas relacionadas en `seguimiento_tratamiento`.
+   * Parsea este resultado e inicializa automáticamente los inputs reactivos de la UI.
+   * 
+   * @param {string|number} id - Identificador de la base de datos correspondiente a la historia a cargar.
+   */
   const abrirEditar = async (id) => {
+    setCargandoHistoria(true);
     const { data, error } = await supabase
       .from('historias_clinicas')
       .select('*')
@@ -139,18 +189,32 @@ export function useHistoriaClinica({ onGuardadoOk } = {}) {
         presupuesto:   s.presupuesto != null ? String(s.presupuesto) : '',
         entrega:       s.entrega      != null ? String(s.entrega)     : '',
       }));
+      
+      if (formData.seguimiento.length === 0) {
+        formData.seguimiento = [{ fecha: '', tratamiento: '', diente: '', caras: '', observaciones: '', presupuesto: '', entrega: '' }];
+      }
 
-      setDatos(formData);
+      formMethods.reset(formData);
       setEditandoId(id);
       setEstadoGuardado(null);
     }
+    setCargandoHistoria(false);
   };
 
-  const guardarHistoria = async (sessionId) => {
+  /**
+   * Emite el guardado final hacia Supabase considerando 2 escenarios condicionales:
+   * 1. (UPDATE): Modifica un registro primario si `editandoId` está activo.
+   * 2. (INSERT): Genera un nuevo registro.
+   * Al finalizar, reescribe de forma paralela la tabla `seguimiento_tratamiento`.
+   * 
+   * @param {string} userId - UUID del usuario autenticado en la sesión.
+   * @param {Object} datos - Datos recolectados y chequeados (on valid) por handleSubmit de React Hook Form.
+   */
+  const guardarHistoria = async (userId, datos) => {
     setGuardando(true);
     setEstadoGuardado(null);
 
-    const registro = formToRow(datos, sessionId);
+    const registro = formToRow(datos, userId);
     const seguimientoFilas = datos.seguimiento || [];
 
     let error;
@@ -212,7 +276,7 @@ export function useHistoriaClinica({ onGuardadoOk } = {}) {
   };
 
   return {
-    datos, editandoId, guardando, estadoGuardado,
-    manejarCambio, abrirNueva, abrirEditar, guardarHistoria, setEstadoGuardado,
+    formMethods, editandoId, guardando, estadoGuardado, cargandoHistoria,
+    abrirNueva, abrirEditar, guardarHistoria, setEstadoGuardado,
   };
 }

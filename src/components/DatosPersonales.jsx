@@ -1,8 +1,9 @@
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
 import { addLocale } from 'primereact/api';
+import { useFormContext, Controller } from 'react-hook-form';
 
 addLocale('es', {
     firstDayOfWeek: 1,
@@ -15,15 +16,15 @@ addLocale('es', {
     clear: 'Limpiar'
 });
 
-function DatosPersonales({ onChange, valores = {} }) {
-    const handleDateChange = (name, date) => {
-        onChange({
-            target: {
-                name,
-                value: date ? format(date, 'yyyy-MM-dd') : ''
-            }
-        });
-    };
+/**
+ * Primer fragmento modular del Formulario Clínico.
+ * Renderiza los campos primarios del paciente (Nombre, DNI, Contacto) apoyándose 
+ * en el contexto global de React Hook Form (`useFormContext`) para inyectar validaciones en vivo.
+ *
+ * @returns {JSX.Element} Bloque de inputs PrimeReact (Datos personales).
+ */
+function DatosPersonales() {
+    const { control } = useFormContext();
 
     const sexos = [
         { label: '--', value: '' },
@@ -41,19 +42,26 @@ function DatosPersonales({ onChange, valores = {} }) {
             <div className="form-grid grid-row-2">
                 <div className="celda">
                     <span className="lbl">Fecha</span>
-                    <Calendar
-                        className="pr-calendar"
-                        inputClassName="pr-input"
-                        value={valores.fecha ? new Date(`${valores.fecha}T12:00:00`) : null}
-                        onChange={e => handleDateChange('fecha', e.value)}
-                        dateFormat="dd/mm/yy"
-                        locale="es"
-                        placeholder="dd/mm/aaaa"
-                    />
+                    <Controller name="fecha" control={control} render={({ field }) => (
+                        <Calendar
+                            className="pr-calendar"
+                            inputClassName="pr-input"
+                            value={field.value ? parseISO(field.value) : null}
+                            onChange={(e) => field.onChange(e.value ? format(e.value, 'yyyy-MM-dd') : '')}
+                            dateFormat="dd/mm/yy"
+                            locale="es"
+                            placeholder="dd/mm/aaaa"
+                        />
+                    )} />
                 </div>
                 <div className="celda">
                     <span className="lbl">Nombre y Apellido</span>
-                    <InputText className="pr-input" name="nombre" onChange={onChange} value={valores.nombre || ''} placeholder="Apellido, Nombre" />
+                    <Controller name="nombre" control={control} render={({ field, fieldState }) => (
+                        <>
+                            <InputText className={`pr-input ${fieldState.error ? 'p-invalid' : ''}`} {...field} placeholder="Apellido, Nombre" />
+                            {fieldState.error && <small className="p-error" style={{ color: '#fca5a5', fontSize: '12px', marginTop: '4px', display: 'block' }}>{fieldState.error.message}</small>}
+                        </>
+                    )} />
                 </div>
             </div>
 
@@ -61,27 +69,35 @@ function DatosPersonales({ onChange, valores = {} }) {
             <div className="form-grid grid-row-4-mixed">
                 <div className="celda">
                     <span className="lbl">Doc. de Identificación</span>
-                    <InputText className="pr-input" name="dni" onChange={onChange} value={valores.dni || ''} placeholder="Nro. documento" />
+                    <Controller name="dni" control={control} render={({ field }) => (
+                        <InputText className="pr-input" {...field} placeholder="Nro. documento" />
+                    )} />
                 </div>
                 <div className="celda">
                     <span className="lbl">Sexo</span>
-                    <Dropdown className="pr-dropdown" name="sexo" value={valores.sexo || ''} options={sexos} onChange={onChange} placeholder="--" />
+                    <Controller name="sexo" control={control} render={({ field }) => (
+                         <Dropdown className="pr-dropdown" {...field} options={sexos} placeholder="--" />
+                    )} />
                 </div>
                 <div className="celda">
                     <span className="lbl">Fecha de Nacimiento</span>
-                    <Calendar
-                        className="pr-calendar"
-                        inputClassName="pr-input"
-                        value={valores.fechaNacimiento ? new Date(`${valores.fechaNacimiento}T12:00:00`) : null}
-                        onChange={e => handleDateChange('fechaNacimiento', e.value)}
-                        dateFormat="dd/mm/yy"
-                        locale="es"
-                        placeholder="dd/mm/aaaa"
-                    />
+                    <Controller name="fechaNacimiento" control={control} render={({ field }) => (
+                        <Calendar
+                            className="pr-calendar"
+                            inputClassName="pr-input"
+                            value={field.value ? parseISO(field.value) : null}
+                            onChange={(e) => field.onChange(e.value ? format(e.value, 'yyyy-MM-dd') : '')}
+                            dateFormat="dd/mm/yy"
+                            locale="es"
+                            placeholder="dd/mm/aaaa"
+                        />
+                    )} />
                 </div>
                 <div className="celda">
                     <span className="lbl">Edad</span>
-                    <InputText keyfilter="int" className="pr-input" name="edad" onChange={onChange} value={valores.edad || ''} placeholder="--" style={{ textAlign: 'center' }} />
+                    <Controller name="edad" control={control} render={({ field }) => (
+                        <InputText keyfilter="int" className="pr-input" {...field} placeholder="--" style={{ textAlign: 'center' }} />
+                    )} />
                 </div>
             </div>
 
@@ -89,15 +105,24 @@ function DatosPersonales({ onChange, valores = {} }) {
             <div className="form-grid grid-row-3-mixed">
                 <div className="celda">
                     <span className="lbl">Teléfono</span>
-                    <InputText className="pr-input" name="telefono" onChange={onChange} value={valores.telefono || ''} placeholder="011 1234-5678" />
+                    <Controller name="telefono" control={control} render={({ field }) => (
+                        <InputText className="pr-input" {...field} placeholder="011 1234-5678" />
+                    )} />
                 </div>
                 <div className="celda">
                     <span className="lbl">Dirección</span>
-                    <InputText className="pr-input" name="direccion" onChange={onChange} value={valores.direccion || ''} placeholder="Calle, número, ciudad" />
+                    <Controller name="direccion" control={control} render={({ field }) => (
+                        <InputText className="pr-input" {...field} placeholder="Calle, número, ciudad" />
+                    )} />
                 </div>
                 <div className="celda">
                     <span className="lbl">Email</span>
-                    <InputText className="pr-input" name="email" onChange={onChange} value={valores.email || ''} placeholder="correo@ejemplo.com" />
+                    <Controller name="email" control={control} render={({ field, fieldState }) => (
+                        <>
+                            <InputText className={`pr-input ${fieldState.error ? 'p-invalid' : ''}`} {...field} placeholder="correo@ejemplo.com" />
+                            {fieldState.error && <small className="p-error" style={{ color: '#fca5a5', fontSize: '12px', marginTop: '4px', display: 'block' }}>{fieldState.error.message}</small>}
+                        </>
+                    )} />
                 </div>
             </div>
 
@@ -105,11 +130,15 @@ function DatosPersonales({ onChange, valores = {} }) {
             <div className="form-grid grid-row-2-mixed">
                 <div className="celda">
                     <span className="lbl">Obra Social</span>
-                    <InputText className="pr-input" name="obraSocial" onChange={onChange} value={valores.obraSocial || ''} placeholder="Nombre de la obra social" />
+                    <Controller name="obraSocial" control={control} render={({ field }) => (
+                         <InputText className="pr-input" {...field} placeholder="Nombre de la obra social" />
+                    )} />
                 </div>
                 <div className="celda">
                     <span className="lbl">N° de Afiliado</span>
-                    <InputText className="pr-input" name="afiliado" onChange={onChange} value={valores.afiliado || ''} placeholder="Nro. afiliado" />
+                    <Controller name="afiliado" control={control} render={({ field }) => (
+                        <InputText className="pr-input" {...field} placeholder="Nro. afiliado" />
+                    )} />
                 </div>
             </div>
 
@@ -117,7 +146,9 @@ function DatosPersonales({ onChange, valores = {} }) {
             <div className="form-grid grid-row-1" style={{ borderRadius: '0 0 6px 6px', overflow: 'hidden' }}>
                 <div className="celda" style={{ borderBottom: 'none' }}>
                     <span className="lbl">Motivo de Consulta</span>
-                    <InputText className="pr-input" name="motivoConsulta" onChange={onChange} value={valores.motivoConsulta || ''} placeholder="Descripción del motivo de consulta" />
+                    <Controller name="motivoConsulta" control={control} render={({ field }) => (
+                        <InputText className="pr-input" {...field} placeholder="Descripción del motivo de consulta" />
+                    )} />
                 </div>
             </div>
         </div>

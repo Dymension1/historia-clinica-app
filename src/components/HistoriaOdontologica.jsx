@@ -1,6 +1,9 @@
 import { RadioButton } from 'primereact/radiobutton';
+import { useFormContext, Controller } from 'react-hook-form';
 
-function HistoriaOdontologica({ onChange, valores = {} }) {
+function HistoriaOdontologica() {
+    const { control } = useFormContext();
+
     const preguntas = [
         { name: 'cepilla', label: '¿Se cepilla los dientes diariamente?' },
         { name: 'hiloDental2', label: '¿Usa hilo dental?' },
@@ -9,10 +12,6 @@ function HistoriaOdontologica({ onChange, valores = {} }) {
         { name: 'tejidos', label: '¿Lesiones de tejidos blandos?' },
     ];
 
-    const handleRadioChange = (e) => {
-        onChange({ target: { name: e.target.name, value: e.value } });
-    };
-
     return (
         <div className="section-wrapper">
             <div className="section-title">Historia Odontológica</div>
@@ -20,14 +19,18 @@ function HistoriaOdontologica({ onChange, valores = {} }) {
                 {preguntas.map(({ name, label }) => (
                     <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <span style={{ minWidth: '280px', color: 'rgba(255,255,255,0.82)', fontSize: '13px' }}>{label}</span>
-                        <label className="form-radio-label">
-                            <RadioButton name={name} value="Si" onChange={handleRadioChange} checked={valores[name] === 'Si'} /> 
-                            <span>Sí</span>
-                        </label>
-                        <label className="form-radio-label" style={{ marginLeft: '10px' }}>
-                            <RadioButton name={name} value="No" onChange={handleRadioChange} checked={valores[name] === 'No'} /> 
-                            <span>No</span>
-                        </label>
+                        <Controller name={name} control={control} render={({ field }) => (
+                            <>
+                                <label className="form-radio-label">
+                                    <RadioButton {...field} value="Si" checked={field.value === 'Si'} /> 
+                                    <span>Sí</span>
+                                </label>
+                                <label className="form-radio-label" style={{ marginLeft: '10px' }}>
+                                    <RadioButton {...field} value="No" checked={field.value === 'No'} /> 
+                                    <span>No</span>
+                                </label>
+                            </>
+                        )} />
                     </div>
                 ))}
             </div>
