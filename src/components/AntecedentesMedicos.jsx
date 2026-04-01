@@ -11,8 +11,8 @@ function AntecedentesMedicos() {
     return (
         <div className="section-wrapper">
             <div className="section-title">Antecedentes Médicos</div>
-            <div className="section-body" style={{ display: 'flex' }}>
-                <div className="section-col" style={{ flex: 1, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="section-body section-body--flex">
+                <div className="section-col section-col--padded">
                     {condiciones.map((cond) => (
                         <label key={cond} className="form-label-item">
                             <Controller name={`cond_${cond}`} control={control} render={({ field }) => (
@@ -41,7 +41,7 @@ function AntecedentesMedicos() {
                     </label>
                 </div>
 
-                <div style={{ flex: 1, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div className="section-col--padded2">
                     <div className="form-row-item">
                         <Controller name="fuma" control={control} render={({ field }) => (
                             <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />

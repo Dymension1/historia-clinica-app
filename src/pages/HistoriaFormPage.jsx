@@ -41,7 +41,48 @@ function HistoriaFormPage({ usuario, userId, cerrarSesion }) {
     guardarHistoria,
   } = useHistoriaClinica();
 
-  const { formState: { isDirty } } = formMethods;
+  /**
+   * Guard de "cambios sin guardar" basado en snapshot JSON.
+   *
+   * Estrategia: guardar un snapshot de los valores del form DESPUÉS de que la carga
+   * termine (usando un setTimeout(0) para asegurar que el reset() y todos los
+   * re-registros de Controllers hayan propagado). Al navegar, comparar el snapshot
+   * con getValues() en ese instante.
+   *
+   * Por qué no usamos isDirty ni watch():
+   * - isDirty da false-positives cuando reset() es async y los defaultValues
+   *   no se asentaron antes de que algún Controller compare.
+   * - watch(callback) dispara el callback hasta N veces al crear la suscripción
+   *   (una por cada campo re-registrado cuando key={editandoId} cambia),
+   *   haciendo imposible distinguir carga de edición real sin lógica frágil.
+   */
+  const snapshotRef = useRef(null);
+
+  // Cuando cambia la ruta (nuevo /historia/nueva vs /historia/editar/:id),
+  // invalidar el snapshot anterior para que no haya residuos de otra carga.
+  useEffect(() => {
+    snapshotRef.current = null;
+  }, [id]);
+
+  // Cuando la carga termina, tomar el snapshot con un tick de delay.
+  // El setTimeout(0) garantiza que el key={editandoId} ya se asentó y todos los
+  // Controllers re-registraron sus valores en el store de RHF.
+  useEffect(() => {
+    if (cargandoHistoria) return;
+    const timer = setTimeout(() => {
+      snapshotRef.current = JSON.stringify(formMethods.getValues());
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [cargandoHistoria, formMethods]);
+
+  // Detecta si hay cambios comparando valores actuales vs snapshot.
+  const hasChanges = useCallback(
+    () => {
+      if (!snapshotRef.current) return false;
+      return JSON.stringify(formMethods.getValues()) !== snapshotRef.current;
+    },
+    [formMethods]
+  );
 
   useEffect(() => {
     if (id) {
@@ -55,14 +96,14 @@ function HistoriaFormPage({ usuario, userId, cerrarSesion }) {
   // ── Guard: aviso al cerrar/recargar la pestaña si hay cambios ──
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      if (isDirty) {
+      if (hasChanges()) {
         e.preventDefault();
         e.returnValue = '';
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isDirty]);
+  }, [hasChanges]);
 
   /**
    * Invoca directamente a la ventana interna de impresión del explorador actual (`window.print()`).
@@ -73,8 +114,8 @@ function HistoriaFormPage({ usuario, userId, cerrarSesion }) {
   const manejarSubmit = async (datos) => {
     const res = await guardarHistoria(userId, datos);
     if (res?.success) {
-      // Resetear el form al estado guardado para limpiar isDirty antes de navegar
-      formMethods.reset(datos);
+      // Actualizar el snapshot para que el guard no dispare al navegar tras guardar
+      snapshotRef.current = JSON.stringify(formMethods.getValues());
       toast.current.show({ severity: 'success', summary: id ? 'Actualizado' : 'Guardado', detail: 'Registro guardado correctamente', life: 1500 });
       setTimeout(() => navigate('/dashboard'), 1500);
     } else {
@@ -83,12 +124,11 @@ function HistoriaFormPage({ usuario, userId, cerrarSesion }) {
   };
 
   /**
-   * Guard manual de navegación: si hay cambios sin guardar muestra un diálogo
-   * de confirmación antes de navegar. Si el form está limpio, navega directo.
-   * (Reemplaza useBlocker que solo funciona con createBrowserRouter)
+   * Guard manual de navegación: compara los valores actuales del form contra el
+   * snapshot capturado al terminar la carga. Si difieren, muestra el diálogo.
    */
   const volverAlDashboard = useCallback(() => {
-    if (!isDirty) {
+    if (!hasChanges()) {
       navigate('/dashboard');
       return;
     }
@@ -102,7 +142,7 @@ function HistoriaFormPage({ usuario, userId, cerrarSesion }) {
       rejectClassName: 'p-confirm-dialog-reject',
       accept: () => navigate('/dashboard'),
     });
-  }, [isDirty, navigate]);
+  }, [hasChanges, navigate]);
 
   return (
     <div className="form-page-wrapper">

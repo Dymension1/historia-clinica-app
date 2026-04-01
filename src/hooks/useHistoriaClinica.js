@@ -19,7 +19,7 @@ function rowToForm(r) {
     dni: r.dni || '',
     sexo: r.sexo || '',
     fechaNacimiento: r.fecha_nacimiento || '',
-    edad: r.edad ?? '',
+    edad: r.edad != null ? String(r.edad) : '',
     telefono: r.telefono || '',
     direccion: r.direccion || '',
     email: r.email_paciente || '',
@@ -180,7 +180,9 @@ export function useHistoriaClinica() {
 
       const formData = rowToForm(data);
       formData.seguimiento = (seguimientoData || []).map((s) => ({
-        _dbId:         s.id,
+        // ⚠️ No incluir _dbId: entraría en defaultValues pero ningún Controller
+        // lo registra → RHF detectaría "uuid" !== undefined → isDirty = true en falso.
+        // guardarHistoria usa DELETE+INSERT de todas formas, no necesita el id de fila.
         fecha:         s.fecha         || '',
         tratamiento:   s.tratamiento   || '',
         diente:        s.diente        || '',

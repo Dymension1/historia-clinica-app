@@ -28,6 +28,8 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
   const [cargandoEdicion, setCargandoEdicion] = useState(null);
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(10);
+  const [sortField, setSortField] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState(-1); // -1 = DESC, 1 = ASC
   const toast = useRef(null);
   const queryClient = useQueryClient();
 
@@ -38,12 +40,12 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
     error: errorRegistros,
     refetch: refetchRegistros
   } = useQuery({
-    queryKey: ['historias', busquedaDebounced, first, rows],
+    queryKey: ['historias', busquedaDebounced, first, rows, sortField, sortOrder],
     queryFn: async () => {
       let req = supabase
         .from('historias_clinicas')
         .select('id, created_at, fecha, nombre, dni, motivo_consulta, diagnostico', { count: 'exact' })
-        .order('created_at', { ascending: false })
+        .order(sortField || 'created_at', { ascending: sortOrder === 1 })
         .range(first, first + rows - 1);
 
       if (busquedaDebounced.trim()) {
@@ -218,6 +220,13 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }) {
               onPage={(e) => {
                 setFirst(e.first);
                 setRows(e.rows);
+              }}
+              sortField={sortField}
+              sortOrder={sortOrder}
+              onSort={(e) => {
+                setSortField(e.sortField);
+                setSortOrder(e.sortOrder);
+                setFirst(0); // volver a página 1 al ordenar
               }}
               rowsPerPageOptions={[5, 10, 25, 50]}
               dataKey="id"

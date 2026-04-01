@@ -18,6 +18,8 @@
 }
 .pr-input-table:focus { background: rgba(0,170,228,0.06); }
 .pr-input-table::placeholder { color: rgba(255,255,255,0.3); }
+.st-input--center { text-align: center; }
+.st-input--right  { text-align: right;  }
 
 /* Dropdown */
 .pr-dropdown-table {

@@ -6,6 +6,7 @@ import 'primeicons/primeicons.css';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './index.css'
+import './lib/primeLocale.js';
 import App from './App.jsx'
 
 const queryClient = new QueryClient({
