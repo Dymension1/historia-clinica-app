@@ -528,3 +528,18 @@
   font-size: 13px;
   margin-left: 6px;
 }
+
+/* ════════════════════════════════════════════
+   ANTECEDENTES MÉDICOS — Layout
+   ════════════════════════════════════════════ */
+.section-body--flex   { display: flex; }
+.section-col--padded  { flex: 1; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+.section-col--padded2 { flex: 1; padding: 12px 16px; display: flex; flex-direction: column; gap: 14px; }
+
+/* ════════════════════════════════════════════
+   HISTORIA ODONTOLÓGICA — Layout
+   ════════════════════════════════════════════ */
+.section-body--ho { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.ho-pregunta-row  { display: flex; align-items: center; gap: 10px; }
+.ho-pregunta-lbl  { min-width: 280px; color: rgba(255,255,255,0.82); font-size: 13px; }
+.form-radio-label--ml { margin-left: 10px; }

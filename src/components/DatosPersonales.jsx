@@ -2,19 +2,9 @@ import { format, parseISO } from 'date-fns';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
-import { addLocale } from 'primereact/api';
+import { useCallback } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
 
-addLocale('es', {
-    firstDayOfWeek: 1,
-    dayNames: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
-    dayNamesShort: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'],
-    dayNamesMin: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
-    monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-    monthNamesShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-    today: 'Hoy',
-    clear: 'Limpiar'
-});
 
 /**
  * Primer fragmento modular del Formulario Clínico.
@@ -24,7 +14,35 @@ addLocale('es', {
  * @returns {JSX.Element} Bloque de inputs PrimeReact (Datos personales).
  */
 function DatosPersonales() {
-    const { control } = useFormContext();
+    const { control, setValue } = useFormContext();
+
+    /**
+     * Calcula la edad en años a partir de una fecha de nacimiento y
+     * la escribe automáticamente en el campo `edad` del formulario.
+     * Si la fecha se borra, limpia el campo edad.
+     *
+     * @param {Date|null} fecha - Objeto Date proveniente del Calendar de PrimeReact.
+     * @param {Function} rhfOnChange - El `onChange` del Controller de RHF para `fechaNacimiento`.
+     */
+    const handleFechaNacimientoChange = useCallback((fecha, rhfOnChange) => {
+        const isoValue = fecha ? format(fecha, 'yyyy-MM-dd') : '';
+        rhfOnChange(isoValue);
+
+        if (fecha) {
+            const hoy = new Date();
+            let edad = hoy.getFullYear() - fecha.getFullYear();
+            const mDiff = hoy.getMonth() - fecha.getMonth();
+            if (mDiff < 0 || (mDiff === 0 && hoy.getDate() < fecha.getDate())) {
+                edad--;
+            }
+            // Solo se escribe si es un valor razonable (entre 0 y 130)
+            if (edad >= 0 && edad <= 130) {
+                setValue('edad', String(edad), { shouldDirty: true });
+            }
+        } else {
+            setValue('edad', '', { shouldDirty: true });
+        }
+    }, [setValue]);
 
     const sexos = [
         { label: '--', value: '' },
@@ -86,7 +104,7 @@ function DatosPersonales() {
                             className="pr-calendar"
                             inputClassName="pr-input"
                             value={field.value ? parseISO(field.value) : null}
-                            onChange={(e) => field.onChange(e.value ? format(e.value, 'yyyy-MM-dd') : '')}
+                            onChange={(e) => handleFechaNacimientoChange(e.value ?? null, field.onChange)}
                             dateFormat="dd/mm/yy"
                             locale="es"
                             placeholder="dd/mm/aaaa"

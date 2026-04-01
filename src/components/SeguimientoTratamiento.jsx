@@ -2,20 +2,8 @@ import { format, parseISO } from 'date-fns';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
-import { addLocale } from 'primereact/api';
-import { useFormContext, useFieldArray, Controller } from 'react-hook-form';
+import { useFormContext, useFieldArray, Controller, useWatch } from 'react-hook-form';
 import '../styles/SeguimientoTratamiento.css';
-
-addLocale('es', {
-    firstDayOfWeek: 1,
-    dayNames: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
-    dayNamesShort: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'],
-    dayNamesMin: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
-    monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-    monthNamesShort: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
-    today: 'Hoy',
-    clear: 'Limpiar'
-});
 
 const TRATAMIENTOS = ['', 'Consulta', 'Limpieza', 'Extracción', 'Endodoncia', 'Operatoria simple', 'Operatoria compleja', 'Prótesis', 'Ortodoncia', 'Implante', 'Otro'];
 
@@ -37,14 +25,76 @@ function getSaldoClass(saldo) {
     return 'st-saldo st-saldo--pendiente';
 }
 
+/**
+ * Sub-componente aislado para cada fila del seguimiento.
+ * Usa `useWatch` exclusivamente sobre los campos `presupuesto` y `entrega` de su índice,
+ * evitando que el cálculo de saldo provoque re-renders de toda la tabla
+ * al cambiar cualquier otro campo del array.
+ */
+function FilaSeguimiento({ control, idx, fieldId, canRemove, onRemove }) {
+    const presupuesto = useWatch({ control, name: `seguimiento.${idx}.presupuesto` });
+    const entrega     = useWatch({ control, name: `seguimiento.${idx}.entrega` });
+    const saldo       = calcularSaldo(presupuesto, entrega);
+
+    return (
+        <tr key={fieldId} className={`st-row ${idx % 2 === 0 ? 'st-row-even' : 'st-row-odd'}`}>
+            <td className="st-td">
+                <div className="fecha-wrapper">
+                    <span className="fecha-icon">📅</span>
+                    <Controller name={`seguimiento.${idx}.fecha`} control={control} render={({ field: colField }) => (
+                        <Calendar
+                            className="pr-calendar-table"
+                            value={colField.value ? parseISO(colField.value) : null}
+                            onChange={e => colField.onChange(e.value ? format(e.value, 'yyyy-MM-dd') : '')}
+                            dateFormat="dd/mm/yy" locale="es" placeholder="dd/mm/aaaa"
+                        />
+                    )} />
+                </div>
+            </td>
+            <td className="st-td">
+                <Controller name={`seguimiento.${idx}.tratamiento`} control={control} render={({ field: colField }) => (
+                    <Dropdown className="pr-dropdown-table" {...colField} options={TRATAMIENTOS} />
+                )} />
+            </td>
+            <td className="st-td st-td--center">
+                <Controller name={`seguimiento.${idx}.diente`} control={control} render={({ field: colField }) => (
+                    <InputText className="pr-input-table st-input--center" {...colField} maxLength={6} placeholder="—" />
+                )} />
+            </td>
+            <td className="st-td st-td--center">
+                <Controller name={`seguimiento.${idx}.caras`} control={control} render={({ field: colField }) => (
+                    <InputText className="pr-input-table st-input--center" {...colField} maxLength={8} placeholder="—" />
+                )} />
+            </td>
+            <td className="st-td">
+                <Controller name={`seguimiento.${idx}.observaciones`} control={control} render={({ field: colField }) => (
+                    <InputText className="pr-input-table" {...colField} placeholder="..." />
+                )} />
+            </td>
+            <td className="st-td st-td--right">
+                <Controller name={`seguimiento.${idx}.presupuesto`} control={control} render={({ field: colField }) => (
+                    <InputText className="pr-input-table st-input--right" {...colField} placeholder="$0" />
+                )} />
+            </td>
+            <td className="st-td st-td--right">
+                <Controller name={`seguimiento.${idx}.entrega`} control={control} render={({ field: colField }) => (
+                    <InputText className="pr-input-table st-input--right" {...colField} placeholder="$0" />
+                )} />
+            </td>
+            <td className="st-td st-td--no-border"><span className={getSaldoClass(saldo)}>{saldo || '—'}</span></td>
+            <td className="st-td st-td--acciones no-print">
+                {canRemove && <button type="button" onClick={onRemove} className="st-btn-del" title="Eliminar fila">✕</button>}
+            </td>
+        </tr>
+    );
+}
+
 function SeguimientoTratamiento() {
-    const { control, watch } = useFormContext();
+    const { control } = useFormContext();
     const { fields, append, remove } = useFieldArray({
         control,
         name: 'seguimiento'
     });
-
-    const seguimientoWatch = watch('seguimiento');
 
     return (
         <div className="section-wrapper">
@@ -76,63 +126,16 @@ function SeguimientoTratamiento() {
                         </tr>
                     </thead>
                     <tbody>
-                        {fields.map((field, idx) => {
-                            const currentP = seguimientoWatch?.[idx]?.presupuesto;
-                            const currentE = seguimientoWatch?.[idx]?.entrega;
-                            const saldo = calcularSaldo(currentP, currentE);
-                            
-                            return (
-                                <tr key={field.id} className={`st-row ${idx % 2 === 0 ? 'st-row-even' : 'st-row-odd'}`}>
-                                    <td className="st-td">
-                                        <div className="fecha-wrapper">
-                                            <span className="fecha-icon">📅</span>
-                                            <Controller name={`seguimiento.${idx}.fecha`} control={control} render={({ field: colField }) => (
-                                                <Calendar
-                                                    className="pr-calendar-table"
-                                                    value={colField.value ? parseISO(colField.value) : null}
-                                                    onChange={e => colField.onChange(e.value ? format(e.value, 'yyyy-MM-dd') : '')}
-                                                    dateFormat="dd/mm/yy" locale="es" placeholder="dd/mm/aaaa"
-                                                />
-                                            )} />
-                                        </div>
-                                    </td>
-                                    <td className="st-td">
-                                        <Controller name={`seguimiento.${idx}.tratamiento`} control={control} render={({ field: colField }) => (
-                                            <Dropdown className="pr-dropdown-table" {...colField} options={TRATAMIENTOS} />
-                                        )} />
-                                    </td>
-                                    <td className="st-td st-td--center">
-                                        <Controller name={`seguimiento.${idx}.diente`} control={control} render={({ field: colField }) => (
-                                            <InputText className="pr-input-table" style={{ textAlign: 'center' }} {...colField} maxLength={6} placeholder="—" />
-                                        )} />
-                                    </td>
-                                    <td className="st-td st-td--center">
-                                         <Controller name={`seguimiento.${idx}.caras`} control={control} render={({ field: colField }) => (
-                                            <InputText className="pr-input-table" style={{ textAlign: 'center' }} {...colField} maxLength={8} placeholder="—" />
-                                        )} />
-                                    </td>
-                                    <td className="st-td">
-                                        <Controller name={`seguimiento.${idx}.observaciones`} control={control} render={({ field: colField }) => (
-                                            <InputText className="pr-input-table" {...colField} placeholder="..." />
-                                        )} />
-                                    </td>
-                                    <td className="st-td st-td--right">
-                                         <Controller name={`seguimiento.${idx}.presupuesto`} control={control} render={({ field: colField }) => (
-                                            <InputText className="pr-input-table" style={{ textAlign: 'right' }} {...colField} placeholder="$0" />
-                                        )} />
-                                    </td>
-                                    <td className="st-td st-td--right">
-                                         <Controller name={`seguimiento.${idx}.entrega`} control={control} render={({ field: colField }) => (
-                                            <InputText className="pr-input-table" style={{ textAlign: 'right' }} {...colField} placeholder="$0" />
-                                        )} />
-                                    </td>
-                                    <td className="st-td st-td--no-border"><span className={getSaldoClass(saldo)}>{saldo || '—'}</span></td>
-                                    <td className="st-td st-td--acciones no-print">
-                                        {fields.length > 1 && <button type="button" onClick={() => remove(idx)} className="st-btn-del" title="Eliminar fila">✕</button>}
-                                    </td>
-                                </tr>
-                            );
-                        })}
+                        {fields.map((field, idx) => (
+                            <FilaSeguimiento
+                                key={field.id}
+                                control={control}
+                                idx={idx}
+                                fieldId={field.id}
+                                canRemove={fields.length > 1}
+                                onRemove={() => remove(idx)}
+                            />
+                        ))}
                     </tbody>
                 </table>
                 <div className="st-footer-actions no-print">

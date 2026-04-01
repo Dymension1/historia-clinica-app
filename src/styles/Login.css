@@ -174,6 +174,57 @@
   cursor: not-allowed;
 }
 
+.login-divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+  text-transform: lowercase;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.login-divider span {
+  padding: 0 12px;
+}
+
+.login-google-btn {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  border: none;
+  border-radius: var(--radius-md);
+  color: #333;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Inter', Arial, sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.login-google-btn:hover:not(:disabled) {
+  background: #f8f8f8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.login-google-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .login-footer {
   text-align: center;
   margin-top: 28px;
