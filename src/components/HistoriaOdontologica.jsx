@@ -15,17 +15,17 @@ function HistoriaOdontologica() {
     return (
         <div className="section-wrapper">
             <div className="section-title">Historia Odontológica</div>
-            <div className="section-body" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div className="section-body section-body--ho">
                 {preguntas.map(({ name, label }) => (
-                    <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ minWidth: '280px', color: 'rgba(255,255,255,0.82)', fontSize: '13px' }}>{label}</span>
+                    <div key={name} className="ho-pregunta-row">
+                        <span className="ho-pregunta-lbl">{label}</span>
                         <Controller name={name} control={control} render={({ field }) => (
                             <>
                                 <label className="form-radio-label">
                                     <RadioButton {...field} value="Si" checked={field.value === 'Si'} /> 
                                     <span>Sí</span>
                                 </label>
-                                <label className="form-radio-label" style={{ marginLeft: '10px' }}>
+                                <label className="form-radio-label form-radio-label--ml">
                                     <RadioButton {...field} value="No" checked={field.value === 'No'} /> 
                                     <span>No</span>
                                 </label>
