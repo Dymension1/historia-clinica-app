@@ -3,15 +3,17 @@ import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { useFormContext, useFieldArray, Controller, useWatch } from 'react-hook-form';
+import type { Control } from 'react-hook-form';
+import type { HistoriaClinicaForm, SeguimientoFila } from '../types';
 import '../styles/SeguimientoTratamiento.css';
 
 const TRATAMIENTOS = ['', 'Consulta', 'Limpieza', 'Extracción', 'Endodoncia', 'Operatoria simple', 'Operatoria compleja', 'Prótesis', 'Ortodoncia', 'Implante', 'Otro'];
 
-const filaVacia = () => ({
+const filaVacia = (): SeguimientoFila => ({
     fecha: '', tratamiento: '', diente: '', caras: '', observaciones: '', presupuesto: '', entrega: '',
 });
 
-function calcularSaldo(presupuesto, entrega) {
+function calcularSaldo(presupuesto: string, entrega: string): string {
     const p = parseFloat((presupuesto || '').replace(/\./g, '').replace(',', '.')) || 0;
     const e = parseFloat((entrega || '').replace(/\./g, '').replace(',', '.')) || 0;
     if (p === 0 && e === 0) return '';
@@ -19,65 +21,67 @@ function calcularSaldo(presupuesto, entrega) {
     return '$' + s.toLocaleString('es-AR', { minimumFractionDigits: 2 });
 }
 
-function getSaldoClass(saldo) {
+function getSaldoClass(saldo: string): string {
     if (!saldo) return 'st-saldo st-saldo--vacio';
     if (saldo.startsWith('$0')) return 'st-saldo st-saldo--pagado';
     return 'st-saldo st-saldo--pendiente';
 }
 
-/**
- * Sub-componente aislado para cada fila del seguimiento.
- * Usa `useWatch` exclusivamente sobre los campos `presupuesto` y `entrega` de su índice,
- * evitando que el cálculo de saldo provoque re-renders de toda la tabla
- * al cambiar cualquier otro campo del array.
- */
-function FilaSeguimiento({ control, idx, fieldId, canRemove, onRemove }) {
-    const presupuesto = useWatch({ control, name: `seguimiento.${idx}.presupuesto` });
-    const entrega     = useWatch({ control, name: `seguimiento.${idx}.entrega` });
-    const saldo       = calcularSaldo(presupuesto, entrega);
+interface FilaSeguimientoProps {
+    control: Control<HistoriaClinicaForm>;
+    idx: number;
+    fieldId: string;
+    canRemove: boolean;
+    onRemove: () => void;
+}
+
+function FilaSeguimiento({ control, idx, fieldId, canRemove, onRemove }: FilaSeguimientoProps) {
+    const presupuesto = useWatch({ control, name: `seguimiento.${idx}.presupuesto` as const });
+    const entrega     = useWatch({ control, name: `seguimiento.${idx}.entrega` as const });
+    const saldo       = calcularSaldo(presupuesto ?? '', entrega ?? '');
 
     return (
         <tr key={fieldId} className={`st-row ${idx % 2 === 0 ? 'st-row-even' : 'st-row-odd'}`}>
             <td className="st-td">
                 <div className="fecha-wrapper">
                     <span className="fecha-icon">📅</span>
-                    <Controller name={`seguimiento.${idx}.fecha`} control={control} render={({ field: colField }) => (
+                    <Controller name={`seguimiento.${idx}.fecha` as const} control={control} render={({ field: colField }) => (
                         <Calendar
                             className="pr-calendar-table"
                             value={colField.value ? parseISO(colField.value) : null}
-                            onChange={e => colField.onChange(e.value ? format(e.value, 'yyyy-MM-dd') : '')}
+                            onChange={e => colField.onChange(e.value ? format(e.value as Date, 'yyyy-MM-dd') : '')}
                             dateFormat="dd/mm/yy" locale="es" placeholder="dd/mm/aaaa"
                         />
                     )} />
                 </div>
             </td>
             <td className="st-td">
-                <Controller name={`seguimiento.${idx}.tratamiento`} control={control} render={({ field: colField }) => (
+                <Controller name={`seguimiento.${idx}.tratamiento` as const} control={control} render={({ field: colField }) => (
                     <Dropdown className="pr-dropdown-table" {...colField} options={TRATAMIENTOS} />
                 )} />
             </td>
             <td className="st-td st-td--center">
-                <Controller name={`seguimiento.${idx}.diente`} control={control} render={({ field: colField }) => (
+                <Controller name={`seguimiento.${idx}.diente` as const} control={control} render={({ field: colField }) => (
                     <InputText className="pr-input-table st-input--center" {...colField} maxLength={6} placeholder="—" />
                 )} />
             </td>
             <td className="st-td st-td--center">
-                <Controller name={`seguimiento.${idx}.caras`} control={control} render={({ field: colField }) => (
+                <Controller name={`seguimiento.${idx}.caras` as const} control={control} render={({ field: colField }) => (
                     <InputText className="pr-input-table st-input--center" {...colField} maxLength={8} placeholder="—" />
                 )} />
             </td>
             <td className="st-td">
-                <Controller name={`seguimiento.${idx}.observaciones`} control={control} render={({ field: colField }) => (
+                <Controller name={`seguimiento.${idx}.observaciones` as const} control={control} render={({ field: colField }) => (
                     <InputText className="pr-input-table" {...colField} placeholder="..." />
                 )} />
             </td>
             <td className="st-td st-td--right">
-                <Controller name={`seguimiento.${idx}.presupuesto`} control={control} render={({ field: colField }) => (
+                <Controller name={`seguimiento.${idx}.presupuesto` as const} control={control} render={({ field: colField }) => (
                     <InputText className="pr-input-table st-input--right" {...colField} placeholder="$0" />
                 )} />
             </td>
             <td className="st-td st-td--right">
-                <Controller name={`seguimiento.${idx}.entrega`} control={control} render={({ field: colField }) => (
+                <Controller name={`seguimiento.${idx}.entrega` as const} control={control} render={({ field: colField }) => (
                     <InputText className="pr-input-table st-input--right" {...colField} placeholder="$0" />
                 )} />
             </td>
@@ -90,7 +94,7 @@ function FilaSeguimiento({ control, idx, fieldId, canRemove, onRemove }) {
 }
 
 function SeguimientoTratamiento() {
-    const { control } = useFormContext();
+    const { control } = useFormContext<HistoriaClinicaForm>();
     const { fields, append, remove } = useFieldArray({
         control,
         name: 'seguimiento'

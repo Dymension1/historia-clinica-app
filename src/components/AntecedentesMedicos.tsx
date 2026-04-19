@@ -2,9 +2,10 @@ import { InputText } from 'primereact/inputtext';
 import { Checkbox } from 'primereact/checkbox';
 import { RadioButton } from 'primereact/radiobutton';
 import { useFormContext, Controller } from 'react-hook-form';
+import type { HistoriaClinicaForm } from '../types';
 
 function AntecedentesMedicos() {
-    const { control } = useFormContext();
+    const { control } = useFormContext<HistoriaClinicaForm>();
 
     const condiciones = ['Cardiopatías', 'Hipertensión / Hipotensión', 'Diabetes', 'Asma', 'Anemia', 'Trastornos tiroideos', 'Epilepsia', 'Trastornos de coagulación', 'Embarazo'];
 
@@ -15,7 +16,7 @@ function AntecedentesMedicos() {
                 <div className="section-col section-col--padded">
                     {condiciones.map((cond) => (
                         <label key={cond} className="form-label-item">
-                            <Controller name={`cond_${cond}`} control={control} render={({ field }) => (
+                            <Controller name={`cond_${cond}` as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
                                 <Checkbox inputId={cond} checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
                             )} />
                             <span>{cond}</span>
@@ -53,7 +54,7 @@ function AntecedentesMedicos() {
                     </div>
 
                     <div className="form-row-item">
-                        <Controller name="alcohol" control={control} render={({ field }) => (
+                        <Controller name={'alcohol_rta' as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
                             <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
                         )} />
                         <span>¿Consume alcohol con frecuencia?</span>
@@ -72,7 +73,7 @@ function AntecedentesMedicos() {
                     </div>
 
                     <div className="form-row-item">
-                        <Controller name="hiloDental" control={control} render={({ field }) => (
+                        <Controller name={'hilo_frec' as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
                             <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
                         )} />
                         <span>¿Usa hilo dental?</span>
@@ -91,7 +92,7 @@ function AntecedentesMedicos() {
                     </div>
 
                     <div className="form-row-item">
-                        <Controller name="enjuague" control={control} render={({ field }) => (
+                        <Controller name={'enjuague_rta' as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
                             <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
                         )} />
                         <span>¿Usa enjuague bucal?</span>
@@ -110,7 +111,7 @@ function AntecedentesMedicos() {
                     </div>
 
                     <div className="form-row-item">
-                        <Controller name="encias" control={control} render={({ field }) => (
+                        <Controller name={'encias_rta' as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
                             <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
                         )} />
                         <span>¿Sangran sus encías?</span>
@@ -129,7 +130,7 @@ function AntecedentesMedicos() {
                     </div>
 
                     <div className="form-row-item">
-                        <Controller name="sensibilidad" control={control} render={({ field }) => (
+                        <Controller name={'sensibilidad_rta' as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
                             <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
                         )} />
                         <span>¿Siente sensibilidad dental?</span>
@@ -148,7 +149,7 @@ function AntecedentesMedicos() {
                     </div>
 
                     <div className="form-row-item">
-                        <Controller name="bruxismo" control={control} render={({ field }) => (
+                        <Controller name={'bruxismo_rta' as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
                             <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
                         )} />
                         <span>¿Bruxismo (aprieta o rechina)?</span>
