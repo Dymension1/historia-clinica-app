@@ -1,10 +1,16 @@
 import { RadioButton } from 'primereact/radiobutton';
 import { useFormContext, Controller } from 'react-hook-form';
+import type { HistoriaClinicaForm } from '../types';
+
+interface Pregunta {
+    name: keyof HistoriaClinicaForm;
+    label: string;
+}
 
 function HistoriaOdontologica() {
-    const { control } = useFormContext();
+    const { control } = useFormContext<HistoriaClinicaForm>();
 
-    const preguntas = [
+    const preguntas: Pregunta[] = [
         { name: 'cepilla', label: '¿Se cepilla los dientes diariamente?' },
         { name: 'hiloDental2', label: '¿Usa hilo dental?' },
         { name: 'enjuague2', label: '¿Usa enjuague bucal?' },
