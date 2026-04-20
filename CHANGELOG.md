@@ -2,25 +2,28 @@
 
 Todas las novedades y cambios del proyecto.
 
-## [1.0.1] - 2026-04-18
-### Mejoras Técnicas & Refactorización
-- **Migración total a TypeScript**: El proyecto ahora es 100% Type-Safe, mejorando la robustez y mantenibilidad.
-- **Optimización de Dashboard**:
-    - Implementación de **ordenamiento por servidor (Server-side sorting)** en la DataTable de pacientes.
-    - Implementación de **paginación perezosa (Lazy loading)** conectada directamente a Supabase.
-    - Added **Skeleton loading** para mejorar la percepción de carga en la lista de pacientes.
-- **Mejoras en Formularios**:
-    - Se agregó lógica de detección de cambios antes de cerrar o abandonar el formulario de historia clínica.
-    - Refactorización de tipos e interfaces para alinearse con el esquema de la base de datos y validaciones Zod.
-- **Correcciones de Errores**:
-    - Se solucionó un problema de tipos en la inicialización de la DataTable durante estados de carga.
+## [1.1.0] - 2026-04-18
+### Migración y Tipado Estricto
+- **TypeScript Migration**: Conversión total del proyecto de JS/JSX a TS/TSX.
+- **Definiciones Globales**: Creación de `src/types/index.ts` para centralizar interfaces de base de datos y negocio.
+- **Configuración de Entorno**: Adición de `tsconfig.json`, `tsconfig.app.json` y migración a `vite.config.ts`.
+- **Filtros Clínicos Rápidos**: Implementación de un sistema de "Chips" para filtrar pacientes con Riesgo Médico (diabetes, hipertensión, etc.), Fumadores y registros con datos incompletos.
+- **Limpieza de búsqueda**: Se agregó un botón para limpiar el campo de búsqueda global instantáneamente.
 
-### UI/UX & Identidad
-- **Actualización de Metadatos**: Se estableció el título oficial ("Historia Clínica · Sistema Odontológico"), el idioma (`lang="es"`) y se agregó el favicon institucional.
-- **Feedback Visual**: Integración de notificaciones Toast y diálogos de confirmación para acciones críticas (eliminar, cancelar cambios).
+## [1.0.1] - 2026-04-01
+### Optimización de Dashboard & UI
+- **Server-Side Sorting**: Implementación de ordenamiento directamente en la consulta de Supabase desde la DataTable.
+- **SEO & Metadatos**: Configuración de `lang="es"`, título oficial y adición de favicon institucional en `index.html`.
+- **Skeleton UI**: Mejora de la experiencia de carga en el Dashboard mediante componentes Skeleton de PrimeReact.
+- **Validación de Salida**: Implementación de lógica `hasChanges` y diálogos de confirmación para evitar pérdida de datos al cancelar ediciones (`HistoriaFormPage`).
 
-## [1.0.0] - 2026-03-20
-### Lanzamiento Inicial
-- Funcionalidad básica de ABM (Alta, Baja, Modificación) de historias clínicas.
-- Integración con Supabase para autenticación y base de datos.
-- Diseño inicial responsivo con PrimeReact.
+## [1.0.0] - 2026-03-17
+### Reestructuración Profunda (Major Refactor)
+- **Arquitectura**: Migración a una estructura basada en páginas y ruteo declarativo con `react-router-dom` v7.
+- **Estado Asíncrono**: Integración de **TanStack Query v5** para la gestión de caché y estados de carga del servidor.
+- **Formularios Pro**: Implementación de **React Hook Form** junto con validación estricta de esquemas mediante **Zod**.
+- **Paginación Inteligente**: Switch a Paginación por Servidor (.range) en el Dashboard para escalabilidad.
+- **Backend**: Fortalecimiento de la conexión con Supabase e integración de políticas de seguridad RLS.
+
+---
+*Para más detalles, consultar el historial de Git.*
