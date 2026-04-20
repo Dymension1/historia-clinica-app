@@ -52,12 +52,12 @@ export const historiaClinicaSchema = z.object({
 
   // Seguimiento
   seguimiento: z.array(z.object({
-    fecha: z.string().optional(),
-    tratamiento: z.string().optional(),
-    diente: z.string().optional(),
-    caras: z.string().optional(),
-    observaciones: z.string().optional(),
-    presupuesto: z.string().optional(),
-    entrega: z.string().optional(),
-  })).optional().default([{ fecha: '', tratamiento: '', diente: '', caras: '', observaciones: '', presupuesto: '', entrega: '' }])
+    fecha: z.string().default(''),
+    tratamiento: z.string().default(''),
+    diente: z.string().default(''),
+    caras: z.string().default(''),
+    observaciones: z.string().default(''),
+    presupuesto: z.string().default(''),
+    entrega: z.string().default(''),
+  })).default([{ fecha: '', tratamiento: '', diente: '', caras: '', observaciones: '', presupuesto: '', entrega: '' }])
 });

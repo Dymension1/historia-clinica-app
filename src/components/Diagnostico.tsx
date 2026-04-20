@@ -1,8 +1,9 @@
 import { InputTextarea } from 'primereact/inputtextarea';
 import { useFormContext, Controller } from 'react-hook-form';
+import type { HistoriaClinicaForm } from '../types';
 
 function Diagnostico() {
-    const { control } = useFormContext();
+    const { control } = useFormContext<HistoriaClinicaForm>();
 
     return (
         <div className="section-wrapper">

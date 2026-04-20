@@ -4,27 +4,12 @@ import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
 import { useCallback } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
+import type { HistoriaClinicaForm } from '../types';
 
-
-/**
- * Primer fragmento modular del Formulario Clínico.
- * Renderiza los campos primarios del paciente (Nombre, DNI, Contacto) apoyándose 
- * en el contexto global de React Hook Form (`useFormContext`) para inyectar validaciones en vivo.
- *
- * @returns {JSX.Element} Bloque de inputs PrimeReact (Datos personales).
- */
 function DatosPersonales() {
-    const { control, setValue } = useFormContext();
+    const { control, setValue } = useFormContext<HistoriaClinicaForm>();
 
-    /**
-     * Calcula la edad en años a partir de una fecha de nacimiento y
-     * la escribe automáticamente en el campo `edad` del formulario.
-     * Si la fecha se borra, limpia el campo edad.
-     *
-     * @param {Date|null} fecha - Objeto Date proveniente del Calendar de PrimeReact.
-     * @param {Function} rhfOnChange - El `onChange` del Controller de RHF para `fechaNacimiento`.
-     */
-    const handleFechaNacimientoChange = useCallback((fecha, rhfOnChange) => {
+    const handleFechaNacimientoChange = useCallback((fecha: Date | null | undefined, rhfOnChange: (value: string) => void) => {
         const isoValue = fecha ? format(fecha, 'yyyy-MM-dd') : '';
         rhfOnChange(isoValue);
 
@@ -35,7 +20,6 @@ function DatosPersonales() {
             if (mDiff < 0 || (mDiff === 0 && hoy.getDate() < fecha.getDate())) {
                 edad--;
             }
-            // Solo se escribe si es un valor razonable (entre 0 y 130)
             if (edad >= 0 && edad <= 130) {
                 setValue('edad', String(edad), { shouldDirty: true });
             }
@@ -65,7 +49,7 @@ function DatosPersonales() {
                             className="pr-calendar"
                             inputClassName="pr-input"
                             value={field.value ? parseISO(field.value) : null}
-                            onChange={(e) => field.onChange(e.value ? format(e.value, 'yyyy-MM-dd') : '')}
+                            onChange={(e) => field.onChange(e.value ? format(e.value as Date, 'yyyy-MM-dd') : '')}
                             dateFormat="dd/mm/yy"
                             locale="es"
                             placeholder="dd/mm/aaaa"
@@ -104,7 +88,7 @@ function DatosPersonales() {
                             className="pr-calendar"
                             inputClassName="pr-input"
                             value={field.value ? parseISO(field.value) : null}
-                            onChange={(e) => handleFechaNacimientoChange(e.value ?? null, field.onChange)}
+                            onChange={(e) => handleFechaNacimientoChange(e.value as Date | null | undefined, field.onChange)}
                             dateFormat="dd/mm/yy"
                             locale="es"
                             placeholder="dd/mm/aaaa"
@@ -114,7 +98,7 @@ function DatosPersonales() {
                 <div className="celda">
                     <span className="lbl">Edad</span>
                     <Controller name="edad" control={control} render={({ field }) => (
-                        <InputText keyfilter="int" className="pr-input" {...field} placeholder="--" style={{ textAlign: 'center' }} />
+                        <InputText keyfilter="int" className="pr-input" {...field} value={field.value as string} placeholder="--" style={{ textAlign: 'center' }} />
                     )} />
                 </div>
             </div>
