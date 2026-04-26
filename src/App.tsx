@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useAuth } from './hooks/useAuth';
-import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import './styles/form.css';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -21,6 +22,14 @@ const GlobalLayout = ({ children }: GlobalLayoutProps) => (
 function App() {
   const { usuario, userId, cargando, cerrarSesion } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Limpiar la URL si no hay sesión y no estamos en la raíz
+  useEffect(() => {
+    if (!cargando && !usuario && location.pathname !== '/') {
+      navigate('/', { replace: true });
+    }
+  }, [usuario, cargando, location.pathname, navigate]);
 
   if (cargando) {
     return (
