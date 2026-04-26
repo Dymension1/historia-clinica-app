@@ -111,14 +111,7 @@ function HistoriaFormPage({ usuario, userId, cerrarSesion }: HistoriaFormPagePro
     <div className="form-page-wrapper">
       <Toast ref={toast} />
       <ConfirmDialog />
-      <Topbar usuario={usuario}>
-        <button className="btn-back" onClick={volverAlDashboard}>
-          <i className="pi pi-arrow-left"></i> Dashboard
-        </button>
-        <button className="btn-ghost-red" onClick={cerrarSesion}>
-          Cerrar sesión
-        </button>
-      </Topbar>
+      <Topbar usuario={usuario} onLogoClick={volverAlDashboard} onCerrarSesion={cerrarSesion} />
 
       <div className="form-body">
         <h1 className="form-page-title">

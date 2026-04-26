@@ -65,15 +65,8 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }: DashboardProp
     }
   });
 
-  const timerBusqueda = useRef<ReturnType<typeof setTimeout>>(undefined);
-
   const manejarBusqueda = (valor: string) => {
     setBusqueda(valor);
-    clearTimeout(timerBusqueda.current);
-    timerBusqueda.current = setTimeout(() => {
-      setBusquedaDebounced(valor);
-      setFirst(0);
-    }, 400);
   };
 
   const confirmarEliminacion = (id: string) => {
@@ -98,6 +91,21 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }: DashboardProp
     });
   };
 
+  const confirmarCerrarSesion = () => {
+    confirmDialog({
+      message: '¿Estás seguro de que deseas cerrar sesión?',
+      header: 'Cerrar Sesión',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, cerrar sesión',
+      rejectLabel: 'Cancelar',
+      acceptClassName: 'p-confirm-dialog-accept',
+      rejectClassName: 'p-confirm-dialog-reject',
+      accept: () => {
+        onCerrarSesion();
+      },
+    });
+  };
+
   const fmtFecha = (str: string | null): string => {
     if (!str) return '—';
     const [y, m, d] = str.split('-');
@@ -109,14 +117,7 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }: DashboardProp
       <Toast ref={toast} />
       <ConfirmDialog />
 
-      <Topbar usuario={usuario}>
-        <button className="btn-primary" onClick={onNueva}>
-          <i className="pi pi-plus"></i> Nueva historia
-        </button>
-        <button className="btn-ghost-red" onClick={onCerrarSesion}>
-          Cerrar sesión
-        </button>
-      </Topbar>
+      <Topbar usuario={usuario} onCerrarSesion={confirmarCerrarSesion} />
       {/* ── Contenido ── */}
       <div className="db-content">
         {/* KPIs */}
@@ -145,14 +146,35 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }: DashboardProp
         </div>
         {/* Toolbar */}
         <div className="db-toolbar">
-          <input
-            type="text"
-            className="db-search"
-            placeholder="🔍  Buscar por nombre, DNI o motivo..."
-            value={busqueda}
-            onChange={(e) => manejarBusqueda(e.target.value)}
-          />
-          <button className="btn-primary" onClick={() => { refetchTotales(); refetchRegistros(); }}>↺ Actualizar</button>
+          <div className="db-search-container">
+            <input
+              type="text"
+              className="db-search"
+              placeholder="🔍  Buscar por nombre, DNI o motivo..."
+              value={busqueda}
+              onChange={(e) => manejarBusqueda(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setBusquedaDebounced(busqueda);
+                  setFirst(0);
+                  refetchRegistros();
+                }
+              }}
+            />
+            {busqueda && (
+              <button
+                className="btn-clear-search"
+                onClick={() => { setBusqueda(''); setBusquedaDebounced(''); setFirst(0); }}
+                title="Limpiar búsqueda"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <button className="btn-primary" onClick={() => { setBusquedaDebounced(busqueda); setFirst(0); refetchRegistros(); }}>🔍 Buscar</button>
+          <button className="btn-primary" onClick={onNueva} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <i className="pi pi-plus"></i> Nueva historia
+          </button>
         </div>
         {/* Banner de error */}
         {errorRegistros && (
