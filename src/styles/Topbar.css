@@ -15,17 +15,226 @@
 .app-topbar-brand {
   display: flex;
   align-items: center;
-  gap: 5px;
   color: white;
   font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.5px;
 }
 
-.app-topbar-brand span {
+.btn-hamburger {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  transition: all 0.2s;
+}
+
+.btn-hamburger:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.app-logo span {
   color: var(--primary-color);
   font-weight: 400;
   margin-top: 3px;
+}
+
+/* Sidebar and MegaMenu Styles */
+.nav-sidebar,
+.nav-sidebar .p-sidebar-content {
+  overflow: visible !important;
+}
+
+.nav-sidebar {
+  background: rgba(13, 27, 46, 0.98) !important;
+  backdrop-filter: blur(15px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  width: 320px !important;
+}
+
+/* Sidebar Close Button Customization */
+.nav-sidebar .p-sidebar-header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 16px !important;
+  z-index: 10;
+}
+
+.nav-sidebar .p-sidebar-close {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  transition: all 0.2s !important;
+}
+
+.nav-sidebar .p-sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+  transform: scale(1.05);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 20px 20px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 16px;
+}
+
+.sidebar-header h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: white;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.sidebar-header h2 span {
+  color: var(--primary-color);
+  font-weight: 400;
+}
+
+.custom-megamenu {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+/* Override PrimeReact grid to prevent narrow columns that cause wrapping */
+.custom-megamenu .p-megamenu-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+}
+
+.custom-megamenu .p-megamenu-grid>div {
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+.custom-megamenu .p-menuitem-link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  padding: 14px 32px !important;
+  /* increased from 20px to account for removed margin */
+  margin: 0 !important;
+  /* removed margin */
+  border-radius: 0 !important;
+  /* removed border radius to make it edge to edge */
+  transition: all 0.2s !important;
+  font-weight: 500;
+  font-size: 1.05rem;
+  white-space: nowrap !important;
+}
+
+.custom-megamenu .p-submenu-icon {
+  margin-left: auto !important;
+}
+
+.custom-megamenu .p-menuitem-link:hover,
+.custom-megamenu .p-menuitem.p-menuitem-active>.p-menuitem-link {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: white !important;
+}
+
+.custom-megamenu .p-menuitem-text {
+  color: inherit !important;
+  white-space: nowrap !important;
+}
+
+.custom-megamenu .p-menuitem-icon {
+  color: inherit !important;
+  margin-right: 0 !important;
+  /* Let gap handle spacing */
+}
+
+.custom-megamenu .p-menuitem-link:hover .p-menuitem-text,
+.custom-megamenu .p-menuitem-link:hover .p-menuitem-icon,
+.custom-megamenu .p-menuitem.p-menuitem-active>.p-menuitem-link .p-menuitem-text,
+.custom-megamenu .p-menuitem.p-menuitem-active>.p-menuitem-link .p-menuitem-icon {
+  color: var(--primary-color) !important;
+}
+
+/* Allow items to be relative for absolute panel positioning */
+.custom-megamenu .p-menuitem {
+  position: relative !important;
+}
+
+/* Fly-out panel to the right */
+.nav-sidebar .p-megamenu.p-megamenu-vertical .p-megamenu-panel {
+  position: absolute !important;
+  left: 100% !important;
+  top: 0 !important;
+  width: 260px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+  background: #12243d !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  margin: 0 0 0 10px !important;
+  padding: 8px 0 !important;
+  z-index: 2000 !important;
+}
+
+/* Submenu items styling */
+.nav-sidebar .p-megamenu-panel .p-megamenu-submenu,
+.nav-sidebar .p-megamenu-panel .p-menuitem {
+  width: 100% !important;
+  display: block !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.nav-sidebar .p-megamenu-panel .p-menuitem-link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 10px 16px !important;
+  margin: 2px 8px !important;
+  width: calc(100% - 16px) !important;
+  box-sizing: border-box !important;
+  font-size: 0.95rem;
+  background: transparent !important;
+  white-space: nowrap !important;
+}
+
+.nav-sidebar .p-megamenu-panel .p-menuitem-link:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: white !important;
+}
+
+.nav-sidebar .p-megamenu-panel .p-megamenu-submenu-header {
+  color: rgba(255, 255, 255, 0.5) !important;
+  background: transparent !important;
+  padding: 8px 16px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap !important;
 }
 
 .app-topbar-right {
@@ -34,18 +243,62 @@
   gap: 12px;
 }
 
+.user-menu-wrapper {
+  position: relative;
+  margin-right: 8px;
+}
+
 .app-user-badge {
+  /* Reset de button */
+  background: var(--glass-bg-strong);
+  border: var(--border-glass-strong);
+  font-family: 'Inter', sans-serif;
+  /* Layout y estética */
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--glass-bg-strong);
-  border: var(--border-glass-strong);
   border-radius: 50px;
   padding: 6px 16px;
   color: rgba(255, 255, 255, 0.85);
   font-size: 13px;
   font-weight: 500;
-  margin-right: 8px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  user-select: none;
+}
+
+.app-user-badge:hover,
+.app-user-badge.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.15);
+}
+
+.badge-chevron {
+  font-size: 10px;
+  opacity: 0.5;
+  transition: transform 0.25s ease;
+}
+
+.badge-chevron.rotated {
+  transform: rotate(180deg);
+  opacity: 0.8;
+}
+
+.menu-item-danger {
+  color: #ff6b55 !important;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu-item-danger:hover {
+  background: rgba(255, 107, 85, 0.1) !important;
+  color: #ff8a75 !important;
 }
 
 .app-user-badge i {
@@ -99,4 +352,56 @@
   .app-topbar-brand {
     font-size: 16px;
   }
+}
+
+/* ── Estilos para el menú de usuario (Sistema) ── */
+.p-menu.custom-user-menu {
+  background: rgba(13, 36, 68, 0.95) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6) !important;
+  padding: 6px !important;
+  width: 200px !important;
+  /* Posicionamiento manual absoluto para evitar movimientos */
+  position: absolute !important;
+  top: calc(100% + 12px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 2000 !important;
+  display: block !important; /* Forzamos visualización manual */
+}
+
+.custom-user-menu .p-menuitem-link {
+  padding: 10px 14px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s !important;
+}
+
+.custom-user-menu .p-menuitem-link:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.custom-user-menu .p-menuitem-text {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+}
+
+.custom-user-menu .p-menuitem-icon {
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 14px !important;
+}
+
+.custom-user-menu .p-menuitem-link:hover .p-menuitem-text {
+  color: white !important;
+}
+
+.custom-user-menu .p-menuitem-link:hover .p-menuitem-icon {
+  color: var(--primary-color) !important;
+}
+
+.custom-user-menu .p-menu-separator {
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  margin: 6px 0 !important;
 }

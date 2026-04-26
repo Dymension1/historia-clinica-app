@@ -13,8 +13,8 @@ interface UseAuthReturn {
  * Escucha automáticamente los cambios de estado (login/logout/caducidad de tokens).
  */
 export function useAuth(): UseAuthReturn {
-  const [usuario, setUsuario]   = useState<string | null>(null);
-  const [userId, setUserId]     = useState<string | null>(null);
+  const [usuario, setUsuario] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {

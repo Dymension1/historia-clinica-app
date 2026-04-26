@@ -183,10 +183,16 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.db-search {
+.db-search-container {
+  position: relative;
   flex: 1;
   min-width: 250px;
-  padding: 12px 20px;
+  display: flex;
+}
+
+.db-search {
+  width: 100%;
+  padding: 12px 44px 12px 20px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -207,6 +213,33 @@
   background: rgba(255, 255, 255, 0.07);
   border-color: var(--primary-color);
   box-shadow: 0 0 0 4px rgba(0, 170, 228, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-clear-search {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 11px;
+  cursor: pointer;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-clear-search:hover {
+  color: white;
+  background: var(--danger-color);
+  border-color: var(--danger-color);
+  box-shadow: 0 0 10px rgba(255, 107, 85, 0.4);
+  transform: translateY(-50%) scale(1.1);
 }
 
 /* ── Tabla PrimeReact ── */
