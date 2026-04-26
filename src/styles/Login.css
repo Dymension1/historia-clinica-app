@@ -104,6 +104,16 @@
   transition: all 0.3s ease;
 }
 
+/* Espacio para el botón del ojo */
+.login-input--password {
+  padding-right: 48px;
+}
+
+.login-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .login-input::placeholder {
   color: rgba(255,255,255,0.25);
 }
@@ -115,6 +125,11 @@
 }
 
 .login-input-icon {
+  /* Reset de button */
+  background: none;
+  border: none;
+  padding: 0;
+  /* Posicionamiento */
   position: absolute;
   right: 14px;
   top: 50%;
@@ -124,6 +139,7 @@
   cursor: pointer;
   user-select: none;
   transition: color 0.2s;
+  line-height: 1;
 }
 .login-input-icon:hover {
   color: rgba(255,255,255,0.7);
