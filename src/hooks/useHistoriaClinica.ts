@@ -47,6 +47,7 @@ function rowToForm(r: HistoriaClinicaRow): HistoriaClinicaForm {
     reacciones: r.reacciones || false,
     reacciones_detalle: r.reacciones_detalle || '',
     cepilla: r.cepilla || '',
+    cepilla_veces: r.cepilla_veces || '',
     hiloDental2: r.hilo_dental2 || '',
     enjuague2: r.enjuague2 || '',
     encias2: r.encias2 || '',
@@ -95,6 +96,7 @@ function formToRow(datos: HistoriaClinicaForm, userId: string): HistoriaClinicaI
     reacciones: !!datos.reacciones,
     reacciones_detalle: datos.reacciones_detalle || null,
     cepilla: datos.cepilla || null,
+    cepilla_veces: datos.cepilla_veces || null,
     hilo_dental2: datos.hiloDental2 || null,
     enjuague2: datos.enjuague2 || null,
     encias2: datos.encias2 || null,
@@ -112,7 +114,7 @@ export const valoresPorDefecto: HistoriaClinicaForm = {
   cond_autoinmunes: false, autoinmunes_detalle: '', cond_otras: false, otras_detalle: '',
   fuma: false, fuma_detalle: '', alcohol_rta: '', hilo_frec: '', enjuague_rta: '',
   encias_rta: '', sensibilidad_rta: '', bruxismo_rta: '', reacciones: false, reacciones_detalle: '',
-  cepilla: '', hiloDental2: '', enjuague2: '', encias2: '', tejidos: '', diagnostico: '',
+  cepilla: '', cepilla_veces: '', hiloDental2: '', enjuague2: '', encias2: '', tejidos: '', diagnostico: '',
   seguimiento: [{ fecha: '', tratamiento: '', diente: '', caras: '', observaciones: '', presupuesto: '', entrega: '' }]
 };
 

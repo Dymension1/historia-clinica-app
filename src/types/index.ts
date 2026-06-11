@@ -73,6 +73,7 @@ export interface HistoriaClinicaRow {
   reacciones: boolean;
   reacciones_detalle: string | null;
   cepilla: string | null;
+  cepilla_veces: string | null;
   hilo_dental2: string | null;
   enjuague2: string | null;
   encias2: string | null;
@@ -133,6 +134,7 @@ export interface HistoriaClinicaInsert {
   reacciones: boolean;
   reacciones_detalle: string | null;
   cepilla: string | null;
+  cepilla_veces: string | null;
   hilo_dental2: string | null;
   enjuague2: string | null;
   encias2: string | null;

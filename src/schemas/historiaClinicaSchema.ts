@@ -42,6 +42,7 @@ export const historiaClinicaSchema = z.object({
 
   // Historia Odontológica
   cepilla: z.string().optional(),
+  cepilla_veces: z.string().optional(),
   hiloDental2: z.string().optional(),
   enjuague2: z.string().optional(),
   encias2: z.string().optional(),
