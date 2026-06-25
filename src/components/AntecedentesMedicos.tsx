@@ -1,13 +1,98 @@
+import { useEffect } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Checkbox } from 'primereact/checkbox';
 import { RadioButton } from 'primereact/radiobutton';
-import { useFormContext, Controller } from 'react-hook-form';
+import { useFormContext, Controller, useWatch } from 'react-hook-form';
 import type { HistoriaClinicaForm } from '../types';
 
-function AntecedentesMedicos() {
-    const { control } = useFormContext<HistoriaClinicaForm>();
+type FieldName = keyof HistoriaClinicaForm;
 
-    const condiciones = ['Cardiopatías', 'Hipertensión / Hipotensión', 'Diabetes', 'Asma', 'Anemia', 'Trastornos tiroideos', 'Epilepsia', 'Trastornos de coagulación', 'Embarazo'];
+// ── Preguntas con radio buttons (Sí/No o custom) ──
+interface PreguntaRadio {
+    type: 'radio';
+    name: FieldName;
+    label: string;
+    options: { value: string; label: string }[];
+}
+
+// ── Preguntas con campo de texto ──
+interface PreguntaTexto {
+    type: 'texto';
+    name: FieldName;
+    label: string;
+    detalleName: FieldName;
+    placeholder: string;
+}
+
+type Pregunta = PreguntaRadio | PreguntaTexto;
+
+const SI_NO = [{ value: 'Si', label: 'Sí' }, { value: 'No', label: 'No' }];
+
+const preguntasCol2: Pregunta[] = [
+    { type: 'texto', name: 'fuma', label: '¿Fuma?', detalleName: 'fuma_detalle', placeholder: 'Cantidad / tipo' },
+    { type: 'radio', name: 'alcohol_rta', label: '¿Consume alcohol con frecuencia?', options: SI_NO },
+    { type: 'radio', name: 'hilo_frec', label: '¿Usa hilo dental?', options: [{ value: '1', label: '1 vez/día' }, { value: '3', label: '3 veces/día' }] },
+    { type: 'radio', name: 'enjuague_rta', label: '¿Usa enjuague bucal?', options: SI_NO },
+    { type: 'radio', name: 'encias_rta', label: '¿Sangran sus encías?', options: SI_NO },
+    { type: 'radio', name: 'sensibilidad_rta', label: '¿Siente sensibilidad dental?', options: SI_NO },
+    { type: 'radio', name: 'bruxismo_rta', label: '¿Bruxismo (aprieta o rechina)?', options: SI_NO },
+    { type: 'texto', name: 'reacciones', label: '¿Tuvo reacciones adversas?', detalleName: 'reacciones_detalle', placeholder: 'Especificar' },
+    { type: 'radio', name: 'cepilla', label: '¿Se cepilla los dientes diariamente?', options: SI_NO },
+    { type: 'radio', name: 'encias2', label: '¿Sangran sus encías?', options: SI_NO },
+    { type: 'radio', name: 'tejidos', label: '¿Lesiones de tejidos blandos?', options: SI_NO },
+];
+
+const condiciones = [
+    'Cardiopatías', 'Hipertensión / Hipotensión', 'Diabetes', 'Asma', 'Anemia',
+    'Trastornos tiroideos', 'Epilepsia', 'Trastornos de coagulación', 'Embarazo',
+];
+
+// ── Componente reutilizable para fila con radio buttons ──
+function FilaRadio({ name, label, options, control }: PreguntaRadio & { control: ReturnType<typeof useFormContext<HistoriaClinicaForm>>['control'] }) {
+    return (
+        <div className="form-row-item">
+            <Controller name={name} control={control} render={({ field }) => (
+                <Checkbox checked={!!field.value} onChange={(e) => { if (!e.checked) field.onChange(''); }} />
+            )} />
+            <span>{label}</span>
+            <Controller name={name} control={control} render={({ field }) => (
+                <>
+                    {options.map((opt) => (
+                        <label key={opt.value} className="form-radio-label">
+                            <RadioButton {...field} value={opt.value} checked={field.value === opt.value} />
+                            <span>{opt.label}</span>
+                        </label>
+                    ))}
+                </>
+            )} />
+        </div>
+    );
+}
+
+// ── Componente reutilizable para fila con campo de texto ──
+function FilaTexto({ name, label, detalleName, placeholder, control }: PreguntaTexto & { control: ReturnType<typeof useFormContext<HistoriaClinicaForm>>['control'] }) {
+    return (
+        <div className="form-row-item">
+            <Controller name={name} control={control} render={({ field }) => (
+                <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
+            )} />
+            <span>{label}</span>
+            <Controller name={detalleName} control={control} render={({ field }) => (
+                <InputText className="pr-input" {...field} value={String(field.value ?? '')} placeholder={placeholder} style={{ flex: 1 }} />
+            )} />
+        </div>
+    );
+}
+
+function AntecedentesMedicos() {
+    const { control, setValue } = useFormContext<HistoriaClinicaForm>();
+    const cepillaValue = useWatch({ control, name: 'cepilla' });
+
+    useEffect(() => {
+        if (cepillaValue !== 'Si') {
+            setValue('cepilla_veces', '');
+        }
+    }, [cepillaValue, setValue]);
 
     return (
         <div className="section-wrapper">
@@ -16,7 +101,7 @@ function AntecedentesMedicos() {
                 <div className="section-col section-col--padded">
                     {condiciones.map((cond) => (
                         <label key={cond} className="form-label-item">
-                            <Controller name={`cond_${cond}` as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
+                            <Controller name={`cond_${cond}` as FieldName} control={control} render={({ field }) => (
                                 <Checkbox inputId={cond} checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
                             )} />
                             <span>{cond}</span>
@@ -43,139 +128,28 @@ function AntecedentesMedicos() {
                 </div>
 
                 <div className="section-col--padded2">
-                    <div className="form-row-item">
-                        <Controller name="fuma" control={control} render={({ field }) => (
-                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
-                        )} />
-                        <span>¿Fuma?</span>
-                        <Controller name="fuma_detalle" control={control} render={({ field }) => (
-                             <InputText className="pr-input" {...field} placeholder="Cantidad / tipo" style={{ flex: 1 }} />
-                        )} />
-                    </div>
-
-                    <div className="form-row-item">
-                        <Controller name={'alcohol_rta' as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
-                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
-                        )} />
-                        <span>¿Consume alcohol con frecuencia?</span>
-                        <Controller name="alcohol_rta" control={control} render={({ field }) => (
-                            <>
-                                <label className="form-radio-label">
-                                    <RadioButton inputId="alcohol_si" {...field} value="Si" checked={field.value === 'Si'} /> 
-                                    <span>Sí</span>
-                                </label>
-                                <label className="form-radio-label">
-                                    <RadioButton inputId="alcohol_no" {...field} value="No" checked={field.value === 'No'} /> 
-                                    <span>No</span>
-                                </label>
-                            </>
-                        )} />
-                    </div>
-
-                    <div className="form-row-item">
-                        <Controller name={'hilo_frec' as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
-                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
-                        )} />
-                        <span>¿Usa hilo dental?</span>
-                        <Controller name="hilo_frec" control={control} render={({ field }) => (
-                            <>
-                                <label className="form-radio-label">
-                                    <RadioButton {...field} value="1" checked={field.value === '1'} /> 
-                                    <span>1 vez/día</span>
-                                </label>
-                                <label className="form-radio-label">
-                                    <RadioButton {...field} value="3" checked={field.value === '3'} /> 
-                                    <span>3 veces/día</span>
-                                </label>
-                            </>
-                        )} />
-                    </div>
-
-                    <div className="form-row-item">
-                        <Controller name={'enjuague_rta' as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
-                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
-                        )} />
-                        <span>¿Usa enjuague bucal?</span>
-                        <Controller name="enjuague_rta" control={control} render={({ field }) => (
-                            <>
-                                <label className="form-radio-label">
-                                    <RadioButton {...field} value="Si" checked={field.value === 'Si'} /> 
-                                    <span>Sí</span>
-                                </label>
-                                <label className="form-radio-label">
-                                    <RadioButton {...field} value="No" checked={field.value === 'No'} /> 
-                                    <span>No</span>
-                                </label>
-                            </>
-                        )} />
-                    </div>
-
-                    <div className="form-row-item">
-                        <Controller name={'encias_rta' as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
-                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
-                        )} />
-                        <span>¿Sangran sus encías?</span>
-                        <Controller name="encias_rta" control={control} render={({ field }) => (
-                            <>
-                                <label className="form-radio-label">
-                                    <RadioButton {...field} value="Si" checked={field.value === 'Si'} /> 
-                                    <span>Sí</span>
-                                </label>
-                                <label className="form-radio-label">
-                                    <RadioButton {...field} value="No" checked={field.value === 'No'} /> 
-                                    <span>No</span>
-                                </label>
-                            </>
-                        )} />
-                    </div>
-
-                    <div className="form-row-item">
-                        <Controller name={'sensibilidad_rta' as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
-                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
-                        )} />
-                        <span>¿Siente sensibilidad dental?</span>
-                        <Controller name="sensibilidad_rta" control={control} render={({ field }) => (
-                            <>
-                                <label className="form-radio-label">
-                                    <RadioButton {...field} value="Si" checked={field.value === 'Si'} /> 
-                                    <span>Sí</span>
-                                </label>
-                                <label className="form-radio-label">
-                                    <RadioButton {...field} value="No" checked={field.value === 'No'} /> 
-                                    <span>No</span>
-                                </label>
-                            </>
-                        )} />
-                    </div>
-
-                    <div className="form-row-item">
-                        <Controller name={'bruxismo_rta' as keyof HistoriaClinicaForm} control={control} render={({ field }) => (
-                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
-                        )} />
-                        <span>¿Bruxismo (aprieta o rechina)?</span>
-                        <Controller name="bruxismo_rta" control={control} render={({ field }) => (
-                            <>
-                                <label className="form-radio-label">
-                                    <RadioButton {...field} value="Si" checked={field.value === 'Si'} /> 
-                                    <span>Sí</span>
-                                </label>
-                                <label className="form-radio-label">
-                                    <RadioButton {...field} value="No" checked={field.value === 'No'} /> 
-                                    <span>No</span>
-                                </label>
-                            </>
-                        )} />
-                    </div>
-
-                    <div className="form-row-item">
-                        <Controller name="reacciones" control={control} render={({ field }) => (
-                            <Checkbox checked={!!field.value} onChange={(e) => field.onChange(e.checked)} />
-                        )} />
-                        <span>¿Tuvo reacciones adversas?</span>
-                         <Controller name="reacciones_detalle" control={control} render={({ field }) => (
-                            <InputText className="pr-input" {...field} placeholder="Especificar" style={{ flex: 1 }} />
-                        )} />
-                    </div>
+                    {preguntasCol2.map((p) => {
+                        if (p.name === 'cepilla') {
+                            // Caso especial: cepilla tiene un sub-campo condicional
+                            return (
+                                <div key={p.name}>
+                                    <FilaRadio {...p as PreguntaRadio} control={control} />
+                                    {cepillaValue === 'Si' && (
+                                        <div className="form-row-item" style={{ marginTop: 8, paddingLeft: 26 }}>
+                                            <span>¿Cuántas veces al día?</span>
+                                            <Controller name="cepilla_veces" control={control} render={({ field }) => (
+                                                <InputText className="pr-input" {...field} placeholder="Ej: 2" style={{ width: 80 }} />
+                                            )} />
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }
+                        if (p.type === 'texto') {
+                            return <FilaTexto key={p.name} {...p} control={control} />;
+                        }
+                        return <FilaRadio key={p.name} {...p} control={control} />;
+                    })}
                 </div>
             </div>
         </div>

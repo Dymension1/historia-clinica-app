@@ -5,7 +5,7 @@ import { useHistoriaClinica } from '../hooks/useHistoriaClinica';
 import Topbar from '../components/Topbar';
 import DatosPersonales from '../components/DatosPersonales';
 import AntecedentesMedicos from '../components/AntecedentesMedicos';
-import HistoriaOdontologica from '../components/HistoriaOdontologica';
+
 import Diagnostico from '../components/Diagnostico';
 import SeguimientoTratamiento from '../components/SeguimientoTratamiento';
 import { Skeleton } from 'primereact/skeleton';
@@ -139,7 +139,6 @@ function HistoriaFormPage({ usuario, userId, cerrarSesion }: HistoriaFormPagePro
                   <>
                     <DatosPersonales />
                     <AntecedentesMedicos />
-                    <HistoriaOdontologica />
                     <Diagnostico />
                     <SeguimientoTratamiento />
                   </>
