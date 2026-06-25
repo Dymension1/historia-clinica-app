@@ -13,7 +13,7 @@ export const historiaClinicaSchema = z.object({
   obraSocial: z.string().optional(),
   afiliado: z.string().optional(),
   motivoConsulta: z.string().optional(),
-  
+
   // Antecedentes
   'cond_Cardiopatías': z.boolean().optional(),
   'cond_Hipertensión / Hipotensión': z.boolean().optional(),
@@ -28,7 +28,7 @@ export const historiaClinicaSchema = z.object({
   autoinmunes_detalle: z.string().optional(),
   cond_otras: z.boolean().optional(),
   otras_detalle: z.string().optional(),
-  
+
   fuma: z.boolean().optional(),
   fuma_detalle: z.string().optional(),
   alcohol_rta: z.string().optional(),
@@ -39,12 +39,9 @@ export const historiaClinicaSchema = z.object({
   bruxismo_rta: z.string().optional(),
   reacciones: z.boolean().optional(),
   reacciones_detalle: z.string().optional(),
-
-  // Historia Odontológica
+  // Se eliminó sección de Historia Odontológica debajo de Antecedentes Médicos(también columnas: hiloDental2, enjuage2)
   cepilla: z.string().optional(),
   cepilla_veces: z.string().optional(),
-  hiloDental2: z.string().optional(),
-  enjuague2: z.string().optional(),
   encias2: z.string().optional(),
   tejidos: z.string().optional(),
 
