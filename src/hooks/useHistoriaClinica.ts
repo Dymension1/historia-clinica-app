@@ -48,8 +48,6 @@ function rowToForm(r: HistoriaClinicaRow): HistoriaClinicaForm {
     reacciones_detalle: r.reacciones_detalle || '',
     cepilla: r.cepilla || '',
     cepilla_veces: r.cepilla_veces || '',
-    hiloDental2: r.hilo_dental2 || '',
-    enjuague2: r.enjuague2 || '',
     encias2: r.encias2 || '',
     tejidos: r.tejidos || '',
     diagnostico: r.diagnostico || '',
@@ -97,8 +95,6 @@ function formToRow(datos: HistoriaClinicaForm, userId: string): HistoriaClinicaI
     reacciones_detalle: datos.reacciones_detalle || null,
     cepilla: datos.cepilla || null,
     cepilla_veces: datos.cepilla_veces || null,
-    hilo_dental2: datos.hiloDental2 || null,
-    enjuague2: datos.enjuague2 || null,
     encias2: datos.encias2 || null,
     tejidos: datos.tejidos || null,
     diagnostico: datos.diagnostico || null,
@@ -114,7 +110,7 @@ export const valoresPorDefecto: HistoriaClinicaForm = {
   cond_autoinmunes: false, autoinmunes_detalle: '', cond_otras: false, otras_detalle: '',
   fuma: false, fuma_detalle: '', alcohol_rta: '', hilo_frec: '', enjuague_rta: '',
   encias_rta: '', sensibilidad_rta: '', bruxismo_rta: '', reacciones: false, reacciones_detalle: '',
-  cepilla: '', cepilla_veces: '', hiloDental2: '', enjuague2: '', encias2: '', tejidos: '', diagnostico: '',
+  cepilla: '', cepilla_veces: '', encias2: '', tejidos: '', diagnostico: '',
   seguimiento: [{ fecha: '', tratamiento: '', diente: '', caras: '', observaciones: '', presupuesto: '', entrega: '' }]
 };
 
@@ -152,15 +148,15 @@ export function useHistoriaClinica() {
         .order('created_at', { ascending: true });
 
       formData.seguimiento = (seguimientoData || []).map((s: SeguimientoRow): SeguimientoFila => ({
-        fecha:         s.fecha         || '',
-        tratamiento:   s.tratamiento   || '',
-        diente:        s.diente        || '',
-        caras:         s.caras         || '',
+        fecha: s.fecha || '',
+        tratamiento: s.tratamiento || '',
+        diente: s.diente || '',
+        caras: s.caras || '',
         observaciones: s.observaciones || '',
-        presupuesto:   s.presupuesto != null ? String(s.presupuesto) : '',
-        entrega:       s.entrega      != null ? String(s.entrega)     : '',
+        presupuesto: s.presupuesto != null ? String(s.presupuesto) : '',
+        entrega: s.entrega != null ? String(s.entrega) : '',
       }));
-      
+
       if (formData.seguimiento!.length === 0) {
         formData.seguimiento = [{ fecha: '', tratamiento: '', diente: '', caras: '', observaciones: '', presupuesto: '', entrega: '' }];
       }
@@ -191,7 +187,7 @@ export function useHistoriaClinica() {
         .insert(registro)
         .select('id')
         .single();
-      error      = insertError;
+      error = insertError;
       historiaId = inserted?.id ?? null;
     }
 
@@ -201,14 +197,14 @@ export function useHistoriaClinica() {
       );
 
       const toPayload = (f: SeguimientoFila) => ({
-        historia_id:   historiaId,
-        fecha:         f.fecha         || null,
-        tratamiento:   f.tratamiento   || null,
-        diente:        f.diente        || null,
-        caras:         f.caras         || null,
+        historia_id: historiaId,
+        fecha: f.fecha || null,
+        tratamiento: f.tratamiento || null,
+        diente: f.diente || null,
+        caras: f.caras || null,
         observaciones: f.observaciones || null,
-        presupuesto:   parseFloat((f.presupuesto || '').replace(/\./g, '').replace(',', '.')) || 0,
-        entrega:       parseFloat((f.entrega     || '').replace(/\./g, '').replace(',', '.')) || 0,
+        presupuesto: parseFloat((f.presupuesto || '').replace(/\./g, '').replace(',', '.')) || 0,
+        entrega: parseFloat((f.entrega || '').replace(/\./g, '').replace(',', '.')) || 0,
       });
 
       const { error: deleteError } = await supabase
