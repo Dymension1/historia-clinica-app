@@ -135,8 +135,6 @@ export interface HistoriaClinicaInsert {
   reacciones_detalle: string | null;
   cepilla: string | null;
   cepilla_veces: string | null;
-  hilo_dental2: string | null;
-  enjuague2: string | null;
   encias2: string | null;
   tejidos: string | null;
   diagnostico: string | null;
