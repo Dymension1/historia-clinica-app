@@ -137,9 +137,13 @@ export function useHistoriaClinica() {
       .from('historias_clinicas')
       .select('*')
       .eq('id', id)
+      .eq('activo', true)
       .single();
 
-    if (!error && data) {
+    if (error || !data) {
+      formMethods.reset(valoresPorDefecto);
+      setEditandoId(null);
+    } else {
       const formData = rowToForm(data);
       const { data: seguimientoData } = await supabase
         .from('seguimiento_tratamiento')

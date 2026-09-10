@@ -39,6 +39,7 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }: DashboardProp
       let req = supabase
         .from('historias_clinicas')
         .select('id, created_at, fecha, nombre, dni, motivo_consulta, diagnostico', { count: 'exact' })
+        .eq('activo', true)
         .order(sortField || 'created_at', { ascending: sortOrder === 1 })
         .range(first, first + rows - 1);
 
@@ -58,8 +59,8 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }: DashboardProp
       const now = new Date();
       const primerDiaMes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
       const [{ count: total }, { count: esteMes }] = await Promise.all([
-        supabase.from('historias_clinicas').select('id', { count: 'exact', head: true }),
-        supabase.from('historias_clinicas').select('id', { count: 'exact', head: true }).gte('created_at', primerDiaMes),
+        supabase.from('historias_clinicas').select('id', { count: 'exact', head: true }).eq('activo', true),
+        supabase.from('historias_clinicas').select('id', { count: 'exact', head: true }).eq('activo', true).gte('created_at', primerDiaMes),
       ]);
       return { total: total || 0, esteMes: esteMes || 0 };
     }
@@ -72,18 +73,23 @@ function Dashboard({ usuario, onNueva, onEditar, onCerrarSesion }: DashboardProp
   const confirmarEliminacion = (id: string) => {
     confirmDialog({
       message: 'Esta acción no se puede deshacer. El registro será eliminado permanentemente.',
-      header: '¿Eliminar registro?',
+      header: 'Confirmar eliminación',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Sí, eliminar',
       rejectLabel: 'Cancelar',
       acceptClassName: 'p-confirm-dialog-accept',
       rejectClassName: 'p-confirm-dialog-reject',
       accept: async () => {
-        const { error } = await supabase.from('historias_clinicas').delete().eq('id', id);
-        if (error) {
-          toast.current?.show({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el registro', life: 3000 });
+        const { data, error } = await supabase
+          .from('historias_clinicas')
+          .update({ activo: false })
+          .eq('id', id)
+          .select('id');
+
+        if (error || !data?.length) {
+          toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error al eliminar el registro', life: 3000 });
         } else {
-          toast.current?.show({ severity: 'success', summary: 'Eliminado', detail: 'Registro eliminado correctamente', life: 3000 });
+          toast.current?.show({ severity: 'success', summary: 'Listo', detail: 'Cambios aplicados correctamente', life: 3000 });
           queryClient.invalidateQueries({ queryKey: ['historias'] });
           queryClient.invalidateQueries({ queryKey: ['totalesHistorias'] });
         }

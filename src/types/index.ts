@@ -37,6 +37,7 @@ export interface HistoriaClinicaRow {
   id: string;
   created_at: string;
   user_id: string;
+  activo: boolean;
   fecha: string | null;
   nombre: string | null;
   dni: string | null;
